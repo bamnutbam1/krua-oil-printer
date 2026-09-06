@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ครัวออยออย - พิมพ์ออเดอร์หน้าร้าน</title>
+  <title>ครัวออยออย - คิดเงินและพิมพ์ใบเสร็จ</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 12px; background-color: #f4f6f8; margin: 0; }
@@ -18,19 +18,26 @@
     .btn-print { background-color: #198754; color: white; font-size: 18px; padding: 14px; margin-top: 12px; }
     .btn-clear { background-color: #6c757d; color: white; padding: 8px; font-size: 13px; margin-top: 8px; }
 
-    /* ตะแกรงปุ่มลัดเมนู */
+    /* แผงปุ่มเมนู */
     .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
-    .btn-menu { background: #fff3cd; border: 1px solid #ffe69c; color: #664d03; padding: 12px 8px; font-size: 15px; border-radius: 8px; font-weight: 600; }
+    .btn-menu { 
+      background: #fff3cd; border: 1px solid #ffe69c; color: #664d03; 
+      padding: 10px 6px; font-size: 15px; border-radius: 8px; font-weight: 600;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .btn-menu span.price { font-size: 12px; color: #d63384; font-weight: bold; margin-top: 2px; }
     .btn-menu:active { background: #ffe69c; transform: scale(0.98); }
     .btn-topping { background: #e2e3e5; border: 1px solid #d3d6d8; color: #383d41; }
 
-    /* รายการออเดอร์ปัจจุบัน */
+    /* รายการออเดอร์และยอดรวม */
     .order-list { border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; padding: 10px 0; margin: 12px 0; }
     .order-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 15px; }
     .item-controls { display: flex; align-items: center; gap: 8px; }
-    .qty-btn { width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid #ccc; background: #fff; font-size: 16px; }
+    .qty-btn { width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid #ccc; background: #fff; font-size: 16px; font-weight: bold; }
+    
+    .total-box { display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: bold; color: #d63384; padding: 6px 0; }
 
-    textarea { width: 100%; height: 60px; padding: 8px; font-size: 14px; border-radius: 6px; border: 1px solid #ced4da; }
+    textarea { width: 100%; height: 50px; padding: 8px; font-size: 14px; border-radius: 6px; border: 1px solid #ced4da; }
   </style>
 </head>
 <body>
@@ -42,31 +49,50 @@
 
     <div style="font-weight: bold; margin-bottom: 6px; color: #444;">เมนูยอดนิยม (กดเพิ่มรายการ):</div>
     <div class="menu-grid">
-      <button class="btn-menu" onclick="addItem('กะเพราหมูกรอบ')">กะเพราหมูกรอบ</button>
-      <button class="btn-menu" onclick="addItem('คะน้าหมูกรอบ')">คะน้าหมูกรอบ</button>
-      <button class="btn-menu" onclick="addItem('กะเพราหมูสับ')">กะเพราหมูสับ</button>
-      <button class="btn-menu" onclick="addItem('ผัดผงกะหรี่')">ผัดผงกะหรี่</button>
-      <button class="btn-menu" onclick="addItem('ข้าวผัด')">ข้าวผัด</button>
-      <button class="btn-menu btn-topping" onclick="addItem('ไข่ดาว')">+ ไข่ดาว</button>
+      <!-- สามารถแก้ไขชื่อและราคาอาหารตรงนี้ได้ตามจริง -->
+      <button class="btn-menu" onclick="addItem('กะเพราหมูกรอบ', 60)">
+        กะเพราหมูกรอบ <span class="price">60.-</span>
+      </button>
+      <button class="btn-menu" onclick="addItem('คะน้าหมูกรอบ', 60)">
+        คะน้าหมูกรอบ <span class="price">60.-</span>
+      </button>
+      <button class="btn-menu" onclick="addItem('กะเพราหมูสับ', 50)">
+        กะเพราหมูสับ <span class="price">50.-</span>
+      </button>
+      <button class="btn-menu" onclick="addItem('ผัดผงกะหรี่', 60)">
+        ผัดผงกะหรี่ <span class="price">60.-</span>
+      </button>
+      <button class="btn-menu" onclick="addItem('ข้าวผัด', 50)">
+        ข้าวผัด <span class="price">50.-</span>
+      </button>
+      <button class="btn-menu btn-topping" onclick="addItem('ไข่ดาว', 10)">
+        + ไข่ดาว <span class="price">10.-</span>
+      </button>
     </div>
 
     <div class="order-list">
-      <div style="font-weight: bold; margin-bottom: 6px; color: #333;">รายการที่เลือก:</div>
+      <div style="font-weight: bold; margin-bottom: 6px; color: #333;">รายการที่สั่ง:</div>
       <div id="selectedItems">ยังไม่มีรายการ</div>
+      
+      <div class="total-box">
+        <span>ยอดรวมทั้งหมด:</span>
+        <span id="totalAmount">0 ฿</span>
+      </div>
     </div>
 
-    <label style="font-size: 13px; color: #666; font-weight: bold;">หมายเหตุ / ออเดอร์พิเศษเพิ่มเติม:</label>
-    <textarea id="extraNotes" placeholder="เช่น ไม่ใส่พริก, หวานน้อย, ข้อความจาก LINE..."></textarea>
+    <label style="font-size: 13px; color: #666; font-weight: bold;">หมายเหตุ / ความต้องการพิเศษ:</label>
+    <textarea id="extraNotes" placeholder="เช่น เผ็ดน้อย, ไม่ใส่กระเทียม, น้ำเปล่า 1..."></textarea>
 
     <button class="btn-clear" onclick="clearAllOrders()">ล้างรายการทั้งหมด</button>
-    <button class="btn-print" onclick="printReceipt()">🖨️ พิมพ์ใบเสร็จ</button>
+    <button class="btn-print" onclick="printReceipt()">🖨️ พิมพ์ใบเสร็จคิดเงิน</button>
   </div>
 
   <script>
     let printCharacteristic = null;
-    let currentOrders = {}; // เก็บ { "ชื่อเมนู": จำนวน }
+    // โครงสร้างเก็บข้อมูล: { "ชื่อเมนู": { price: 60, qty: 2 } }
+    let currentOrders = {};
 
-    // 1. เชื่อมต่อเครื่องพิมพ์
+    // 1. เชื่อมต่อเครื่องพิมพ์บลูทูธ
     async function connectPrinter() {
       try {
         const statusEl = document.getElementById("status");
@@ -104,20 +130,20 @@
       }
     }
 
-    // 2. จัดการรายการอาหาร
-    function addItem(name) {
+    // 2. จัดการรายการอาหารและคำนวณเงิน
+    function addItem(name, price) {
       if (currentOrders[name]) {
-        currentOrders[name] += 1;
+        currentOrders[name].qty += 1;
       } else {
-        currentOrders[name] = 1;
+        currentOrders[name] = { price: price, qty: 1 };
       }
       renderOrderList();
     }
 
     function changeQty(name, delta) {
       if (!currentOrders[name]) return;
-      currentOrders[name] += delta;
-      if (currentOrders[name] <= 0) {
+      currentOrders[name].qty += delta;
+      if (currentOrders[name].qty <= 0) {
         delete currentOrders[name];
       }
       renderOrderList();
@@ -129,32 +155,47 @@
       renderOrderList();
     }
 
+    function calculateTotal() {
+      let total = 0;
+      for (const item in currentOrders) {
+        total += currentOrders[item].price * currentOrders[item].qty;
+      }
+      return total;
+    }
+
     function renderOrderList() {
       const container = document.getElementById("selectedItems");
+      const totalEl = document.getElementById("totalAmount");
       const keys = Object.keys(currentOrders);
       
       if (keys.length === 0) {
         container.innerHTML = '<span style="color:#888;">ยังไม่มีรายการ</span>';
+        totalEl.innerText = "0 ฿";
         return;
       }
 
       let html = "";
       keys.forEach(item => {
+        const lineTotal = currentOrders[item].price * currentOrders[item].qty;
         html += `
           <div class="order-item">
-            <span>${item}</span>
+            <div>
+              <div>${item}</div>
+              <small style="color:#666;">@${currentOrders[item].price} = <b>${lineTotal}฿</b></small>
+            </div>
             <div class="item-controls">
               <button class="qty-btn" onclick="changeQty('${item}', -1)">-</button>
-              <strong style="min-width: 20px; text-align: center;">${currentOrders[item]}</strong>
+              <strong style="min-width: 20px; text-align: center;">${currentOrders[item].qty}</strong>
               <button class="qty-btn" onclick="changeQty('${item}', 1)">+</button>
             </div>
           </div>
         `;
       });
       container.innerHTML = html;
+      totalEl.innerText = `${calculateTotal()} ฿`;
     }
 
-    // 3. ส่งข้อมูลออกเครื่องพิมพ์
+    // 3. พิมพ์ใบเสร็จแจกแจงรายการและยอดเงิน
     async function printReceipt() {
       if (!printCharacteristic) {
         alert("กรุณากดเชื่อมต่อเครื่องพิมพ์บลูทูธก่อนครับ");
@@ -165,31 +206,37 @@
       const extraNotes = document.getElementById("extraNotes").value.trim();
 
       if (keys.length === 0 && !extraNotes) {
-        alert("กรุณาเลือกเมนูหรือระบุข้อความออเดอร์");
+        alert("กรุณาเลือกเมนูหรือพิมพ์ออเดอร์ก่อนสั่งพิมพ์");
         return;
       }
 
-      // ดึงเวลาปัจจุบัน
       const now = new Date();
       const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const total = calculateTotal();
 
-      // รวบรวมบรรทัดที่จะพิมพ์
+      // จัดฟอร์แมตใบเสร็จ
       let receiptText = "";
       receiptText += "--------------------------------\n";
       receiptText += `เวลา: ${timeStr}\n`;
       receiptText += "--------------------------------\n";
 
       keys.forEach(item => {
-        receiptText += `${item}  x${currentOrders[item]}\n`;
+        const qty = currentOrders[item].qty;
+        const linePrice = currentOrders[item].price * qty;
+        // จัดให้แสดง: ชื่อเมนู xจำนวน  ราคา
+        receiptText += `${item} x${qty}  = ${linePrice} B\n`;
       });
 
       if (extraNotes) {
-        receiptText += `\nหมายเหตุเพิ่มเติม:\n${extraNotes}\n`;
+        receiptText += `\nหมายเหตุ: ${extraNotes}\n`;
       }
 
-      receiptText += "--------------------------------\n\n\n";
+      receiptText += "--------------------------------\n";
+      receiptText += `รวมทั้งสิ้น:  ${total} บาท\n`;
+      receiptText += "--------------------------------\n";
+      receiptText += "     ขอบคุณที่ใช้บริการครับ     \n\n\n";
 
-      // ส่งคำสั่ง ESC/POS
+      // ส่งชุดคำสั่งพิมพ์ ESC/POS
       const encoder = new TextEncoder();
       const initPrinter = [0x1B, 0x40];
       const alignCenter = [0x1B, 0x61, 0x01];
@@ -209,7 +256,7 @@
         await printCharacteristic.writeValue(chunk);
       }
 
-      // พิมพ์เสร็จแล้วล้างหน้าจอเตรียมรับคิวถัดไป
+      // พิมพ์เสร็จแล้วล้างหน้าจอเพื่อรับลูกค้าท่านต่อไป
       clearAllOrders();
     }
   </script>
