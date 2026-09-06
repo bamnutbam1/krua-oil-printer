@@ -116,9 +116,15 @@
     .btn-mini { padding: 4px 8px; font-size: 11px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
     .btn-mini-view { background: #0ea5e9; color: white; }
     .btn-mini-del { background: #fee2e2; color: #b91c1c; }
+
+    /* ซ่อน Canvas ที่ใช้แปลงภาพ */
+    #printCanvas { display: none; }
   </style>
 </head>
 <body>
+
+  <!-- Canvas ลับสำหรับวาดภาษาไทยเป็นรูปภาพ -->
+  <canvas id="printCanvas" width="384"></canvas>
 
   <div class="card">
     <div class="header-box">
@@ -209,7 +215,7 @@
         <div class="grid-2">
           <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวหมูสับ', 40)"><span class="name">ข้าวไข่เจียวหมูสับ</span><span class="price">40.-</span></div>
           <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวทรงเครื่อง', 40)"><span class="name">ข้าวไข่เจียวทรงเครื่อง</span><span class="price">40.-</span></div>
-          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียว 2 ฟอง', 30)"><span class="name">ไข่เจียว 2 ฟอง</span><span class="price">30.-</span></div>
+          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียว 2 ฟอง', 30)"><span class="name">ข้าวไข่เจียว 2 ฟอง</span><span class="price">30.-</span></div>
           <div class="btn-card" onclick="addDirect('ข้าวไข่ดาว 2 ฟอง', 30)"><span class="name">ไข่ดาว 2 ฟอง</span><span class="price">30.-</span></div>
           <div class="btn-card" onclick="addDirect('ข้าวเปล่า', 10)"><span class="name">ข้าวเปล่า</span><span class="price">10.-</span></div>
         </div>
@@ -238,7 +244,7 @@
       <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:8px; margin-top:8px;">
         <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px;">🧾 แผนกคิดเงิน & ลูกค้า:</div>
         <button class="btn-act btn-preview" onclick="openReceiptPreview()">👁️ ดูตัวอย่างบิล & QR Code ชำระเงิน</button>
-        <button class="btn-act btn-green" onclick="printReceipt()">🖨️ พิมพ์บิลคิดเงินลูกค้า (พร้อม QR)</button>
+        <button class="btn-act btn-green" onclick="printReceipt()">🖨️ พิมพ์บิลคิดเงินลูกค้า (ภาษาไทย)</button>
         <button class="btn-act btn-remind" onclick="copyUnpaidReminder()">📢 คัดลอกสรุปรายการที่รอชำระส่ง LINE</button>
         <button class="btn-act btn-cyan" onclick="copyReceipt()">📋 คัดลอกบิลรวมส่ง LINE</button>
       </div>
@@ -313,20 +319,61 @@
     let billItems = [];
     let printCharacteristic = null;
 
-    // ฟังก์ชันแปลงตัวอักษรไทยเป็น TIS-620 เพื่อให้เครื่องพิมพ์จีนพิมพ์ไทยได้ ไม่กลายเป็นภาษาจีน
-    function encodeToTIS620(str) {
-      const bytes = [];
-      for (let i = 0; i < str.length; i++) {
-        const code = str.charCodeAt(i);
-        if (code <= 0x7F) {
-          bytes.push(code);
-        } else if (code >= 0x0E01 && code <= 0x0E5B) {
-          bytes.push(code - 0x0E00 + 0xA0);
-        } else {
-          bytes.push(0x20); // space
+    // ระบบวาดข้อความภาษาไทยลงบน Canvas และแปลงเป็น Bitmap Data ส่งเครื่องพิมพ์
+    function generateBitmapFromText(text, fontSize = 24, isBold = false) {
+      const canvas = document.getElementById('printCanvas');
+      const ctx = canvas.getContext('2d');
+      const width = 384; // ความกว้างมาตรฐานกระดาษ 58 มม.
+      
+      const lines = text.split('\n');
+      const lineHeight = fontSize + 8;
+      const height = (lines.length + 1) * lineHeight;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      // เคลียร์พื้นหลังเป็นสีขาว
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, width, height);
+
+      // วาดตัวหนังสือภาษาไทยด้วยสีดำ
+      ctx.fillStyle = '#000000';
+      ctx.font = `${isBold ? 'bold ' : ''}${fontSize}px -apple-system, sans-serif`;
+      ctx.textBaseline = 'top';
+
+      lines.forEach((line, index) => {
+        ctx.fillText(line, 4, index * lineHeight);
+      });
+
+      // แปลงพิกเซลเป็นข้อมูล 1-bit monochrome ESC/POS (GS v 0)
+      const imgData = ctx.getImageData(0, 0, width, height);
+      const data = imgData.data;
+      const bytesWidth = width / 8; // 48 bytes ต่อ 1 แถว
+      const dots = [];
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < bytesWidth; x++) {
+          let byte = 0;
+          for (let b = 0; b < 8; b++) {
+            const px = x * 8 + b;
+            const idx = (y * width + px) * 4;
+            // คำนวณความสว่าง (Grayscale)
+            const brightness = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+            if (brightness < 128) {
+              byte |= (1 << (7 - b)); // จุดสีดำ
+            }
+          }
+          dots.push(byte);
         }
       }
-      return bytes;
+
+      const xL = bytesWidth % 256;
+      const xH = Math.floor(bytesWidth / 256);
+      const yL = height % 256;
+      const yH = Math.floor(height / 256);
+
+      // คำสั่ง ESC/POS พิมพ์ภาพ Raster Bit Image (GS v 0)
+      return [0x1D, 0x76, 0x30, 0x00, xL, xH, yL, yH, ...dots, 0x0A, 0x0A, 0x0A];
     }
 
     function initMeta() {
@@ -408,29 +455,18 @@
       renderBill();
     }
 
-    // ฟังก์ชันพิมพ์ข้อความดิบ ตัดภาษาจีนทิ้ง 100%
+    // พิมพ์ข้อความจาก LINE เป็นภาษาไทยแท้
     async function printRawLineText() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
       const text = document.getElementById('lineRawText').value.trim();
       if (!text) return alert("กรุณาวางข้อความจาก LINE ก่อนพิมพ์ครับ");
 
+      const printText = `[ ออเดอร์จาก LINE ]\n--------------------------------\n${text}\n--------------------------------`;
+      const bitmapData = generateBitmapFromText(printText, 24, true);
       const init = [0x1B, 0x40];
-      const disableChinese = [0x1C, 0x2E]; // ยกเลิกโหมดภาษาจีนเด็ดขาด
-      const thaiCodePage = [0x1B, 0x74, 0x1B]; // เปิดตารางไทย
-      const boldOn = [0x1B, 0x45, 0x01];
-      const boldOff = [0x1B, 0x45, 0x00];
-      const doubleSize = [0x1D, 0x21, 0x11];
-      const normalSize = [0x1D, 0x21, 0x00];
 
-      let printData = [...init, ...disableChinese, ...thaiCodePage, ...boldOn, ...doubleSize];
-      printData.push(...encodeToTIS620("[ ออเดอร์จาก LINE ]\n"));
-      printData.push(...normalSize, ...boldOff);
-      printData.push(...encodeToTIS620("================================\n"));
-      printData.push(...encodeToTIS620(text + "\n"));
-      printData.push(...encodeToTIS620("================================\n\n\n"));
-
-      sendChunks(printData);
-      alert("🖨️ ส่งข้อความออกเครื่องพิมพ์เรียบร้อย!");
+      await sendChunks([...init, ...bitmapData]);
+      alert("🖨️ ส่งพิมพ์ภาษาไทยออกเรียบร้อย!");
     }
 
     function parseLineOrders() {
@@ -727,16 +763,16 @@
         if (i.isPaid) paid += amt;
       });
 
-      let t = "🧾 บิลรายการอาหาร ครัวออยออย\n";
+      let t = "      ครัวออยออย\n";
       let line1 = "";
-      if (bNo) line1 += `เลขที่บิล: ${bNo}`;
+      if (bNo) line1 += `บิล: ${bNo}`;
       if (bDate) line1 += `   วันที่: ${bDate}`;
       if (line1) t += `${line1}\n`;
 
-      if (bOrderTime) t += `เวลาที่รับออเดอร์: ${bOrderTime} น.\n`;
-      if (bCust) t += `ชื่อลูกค้า: ${bCust}\n`;
+      if (bOrderTime) t += `เวลารับออเดอร์: ${bOrderTime} น.\n`;
+      if (bCust) t += `ลูกค้า: ${bCust}\n`;
       if (bPlace) t += `สถานที่ส่ง: ${bPlace}\n`;
-      if (bDelivTime) t += `เวลาที่ให้จัดส่ง: ${bDelivTime}\n`;
+      if (bDelivTime) t += `เวลาส่ง: ${bDelivTime}\n`;
       t += "--------------------------------\n";
 
       billItems.forEach((item, idx) => {
@@ -770,7 +806,6 @@
       }
       t += "--------------------------------\n";
       t += "บัญชี: น.ส. ทัศนีย์ เม่นทอง (K SHOP)\n";
-      t += "[ สแกน QR Code เพื่อชำระเงิน ]\n";
       t += "ขอบคุณที่อุดหนุนครัวออยออย ครับ 🙏\n";
       return t;
     }
@@ -783,20 +818,20 @@
       const bPlace = document.getElementById('billDelivery').value.trim();
       const bDelivTime = document.getElementById('billDeliveryTime').value.trim();
       
-      let t = "================================\n       [ ใบสั่งเข้าครัว ]       \n";
+      let t = "      [ ใบสั่งเข้าครัว ]\n";
       let line1 = "";
       if (bNo) line1 += `บิล: ${bNo}`;
       if (bDate) line1 += ` | วันที่: ${bDate}`;
       if (line1) t += `${line1}\n`;
 
       let line2 = [];
-      if (bOrderTime) line2.push(`รับออเดอร์: ${bOrderTime} น.`);
+      if (bOrderTime) line2.push(`รับ: ${bOrderTime} น.`);
       if (bDelivTime) line2.push(`ส่ง: ${bDelivTime}`);
       if (line2.length > 0) t += `${line2.join(' | ')}\n`;
 
       if (bCust) t += `ลูกค้า: ${bCust}\n`;
-      if (bPlace) t += `สถานที่ส่ง: ${bPlace}\n`;
-      t += "================================\n\n";
+      if (bPlace) t += `ส่งที่: ${bPlace}\n`;
+      t += "--------------------------------\n";
 
       billItems.forEach((item, idx) => {
         let tagStr = "";
@@ -804,7 +839,7 @@
         if (item.special) tagStr += " [พิเศษ]";
         if (item.customSpecialText) tagStr += ` [${item.customSpecialText}]`;
 
-        t += `#${idx + 1} ${item.name}${tagStr}  [x${item.qty}]\n`;
+        t += `#${idx + 1} ${item.name}${tagStr}  x${item.qty}\n`;
         let details = [];
         if (item.personName.trim()) details.push(item.personName.trim());
         if (item.eggOption !== 'none') details.push(item.eggOption);
@@ -817,7 +852,7 @@
       });
 
       const totalDishes = billItems.reduce((sum, item) => sum + item.qty, 0);
-      t += `================================\n        รวมทั้งหมด: ${totalDishes} รายการ\n================================\n`;
+      t += `--------------------------------\nรวมทั้งหมด: ${totalDishes} รายการ\n`;
       return t;
     }
 
@@ -956,21 +991,20 @@
       }
     }
 
-    // ฟังก์ชันพิมพ์บิล คิดเงิน (ปิดภาษาจีน + แปลง TIS-620)
+    // พิมพ์บิลคิดเงิน ออกเป็นภาษาไทยแท้ 100% ผ่านกราฟิก
     async function printReceipt() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
       if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
       saveBillToHistory();
 
       const text = buildReceiptText();
+      const bitmapData = generateBitmapFromText(text, 22, false);
       const init = [0x1B, 0x40];
-      const disableChinese = [0x1C, 0x2E]; // ยกเลิกโหมดภาษาจีน
-      const thaiCodePage = [0x1B, 0x74, 0x1B]; // เปิดตารางไทย
       const alignCenter = [0x1B, 0x61, 0x01];
-      const alignLeft = [0x1B, 0x61, 0x00];
 
-      let printData = [...init, ...disableChinese, ...thaiCodePage, ...alignLeft, ...encodeToTIS620(text), ...alignCenter];
+      let printData = [...init, ...bitmapData, ...alignCenter];
 
+      // พิมพ์ QR Code พร้อมเพย์ต่อท้าย
       const encoder = new TextEncoder();
       const qrPayloadBytes = encoder.encode(SHOP_PROMPTPAY_PAYLOAD);
       const len = qrPayloadBytes.length + 3;
@@ -984,75 +1018,19 @@
       printData.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30);
       printData.push(0x0A, 0x0A, 0x0A);
 
-      sendChunks(printData);
+      await sendChunks(printData);
     }
 
-    // ฟังก์ชันพิมพ์ใบครัว (ปิดภาษาจีน + แปลง TIS-620)
+    // พิมพ์ใบสั่งเข้าครัว ออกเป็นภาษาไทยตัวหนาใหญ่ชัดเจน 100%
     async function printKitchenTicket() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
       if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
 
+      const text = buildKitchenText();
+      const bitmapData = generateBitmapFromText(text, 26, true);
       const init = [0x1B, 0x40];
-      const disableChinese = [0x1C, 0x2E]; // ยกเลิกโหมดภาษาจีน
-      const thaiCodePage = [0x1B, 0x74, 0x1B]; // เปิดตารางไทย
-      const doubleSize = [0x1D, 0x21, 0x11];
-      const normalSize = [0x1D, 0x21, 0x00];
-      const boldOn = [0x1B, 0x45, 0x01];
-      const boldOff = [0x1B, 0x45, 0x00];
 
-      let printData = [...init, ...disableChinese, ...thaiCodePage];
-
-      printData.push(...boldOn, ...doubleSize);
-      printData.push(...encodeToTIS620("[ ใบสั่งเข้าครัว ]\n"));
-      printData.push(...normalSize, ...boldOff);
-      
-      const bNo = document.getElementById('billNo').value.trim();
-      const bDate = getFormattedDate();
-      const bOrderTime = document.getElementById('billOrderTime').value.trim();
-      const bCust = document.getElementById('billCustName').value.trim();
-      const bPlace = document.getElementById('billDelivery').value.trim();
-      const bDelivTime = document.getElementById('billDeliveryTime').value.trim();
-      
-      let headerStr = "";
-      if (bNo) headerStr += `บิล: ${bNo}`;
-      if (bDate) headerStr += ` | วันที่: ${bDate}`;
-      headerStr += "\n";
-      if (bOrderTime) headerStr += `รับ: ${bOrderTime} น. | `;
-      if (bDelivTime) headerStr += `ส่ง: ${bDelivTime}\n`;
-      else headerStr += "\n";
-      if (bCust) headerStr += `ลูกค้า: ${bCust}\n`;
-      if (bPlace) headerStr += `สถานที่ส่ง: ${bPlace}\n`;
-      printData.push(...encodeToTIS620(headerStr + "================================\n\n"));
-
-      billItems.forEach((item, idx) => {
-        let tagStr = "";
-        if (item.isDishOnly) tagStr += " [กับข้าว]";
-        if (item.special) tagStr += " [พิเศษ]";
-        if (item.customSpecialText) tagStr += ` [${item.customSpecialText}]`;
-
-        printData.push(...boldOn, ...doubleSize);
-        printData.push(...encodeToTIS620(`#${idx + 1} ${item.name}${tagStr} x${item.qty}\n`));
-        printData.push(...normalSize, ...boldOff);
-
-        let details = [];
-        if (item.personName.trim()) details.push(item.personName.trim());
-        if (item.eggOption !== 'none') details.push(item.eggOption);
-        if (item.note.trim()) details.push(item.note.trim());
-        
-        if (details.length > 0) {
-          printData.push(...encodeToTIS620(`   >> ${details.join(' | ')}\n`));
-        }
-        printData.push(...encodeToTIS620("\n"));
-      });
-
-      const totalDishes = billItems.reduce((sum, item) => sum + item.qty, 0);
-      printData.push(...encodeToTIS620("================================\n"));
-      printData.push(...boldOn);
-      printData.push(...encodeToTIS620(`รวมทั้งหมด: ${totalDishes} รายการ\n`));
-      printData.push(...boldOff);
-      printData.push(...encodeToTIS620("================================\n\n\n"));
-
-      sendChunks(printData);
+      await sendChunks([...init, ...bitmapData]);
     }
 
     async function sendChunks(data) {
