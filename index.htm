@@ -70,9 +70,12 @@
     .btn-act { width: 100%; padding: 10px; font-size: 14px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 6px; }
     .btn-blue { background: #0284c7; color: white; padding: 6px; font-size: 12px; margin-bottom: 6px; }
     
-    /* ปุ่มหน้าครัว & ปุ่มบิล */
-    .btn-kitchen { background: #d97706; color: white; font-size: 16px; padding: 12px; } /* ปุ่มส่งเข้าครัวสีส้ม */
+    /* สไตล์ปุ่มแผนกครัว */
+    .btn-kitchen { background: #d97706; color: white; font-size: 15px; padding: 12px; }
+    .btn-kitchen-line { background: #06c755; color: white; font-size: 14px; } /* ปุ่ม LINE สีเขียว */
     .btn-preview-kitchen { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 13px; }
+    
+    /* สไตล์ปุ่มแผนกคิดเงิน */
     .btn-preview { background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; font-size: 13px; }
     .btn-green { background: #16a34a; color: white; font-size: 15px; }
     .btn-sheet { background: #059669; color: white; }
@@ -84,7 +87,7 @@
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; padding: 12px; }
     .receipt-paper { background: #fff; width: 100%; max-width: 360px; max-height: 85vh; border-radius: 8px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
     .receipt-content { font-family: monospace, sans-serif; font-size: 13px; line-height: 1.4; color: #000; overflow-y: auto; white-space: pre-wrap; background: #fafafa; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px; margin: 10px 0; }
-    .receipt-content.kitchen-preview { font-size: 15px; font-weight: bold; background: #fffbeb; border-color: #fef3c7; }
+    .receipt-content.kitchen-preview { font-size: 14px; font-weight: bold; background: #fffbeb; border-color: #fef3c7; }
     .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   </style>
 </head>
@@ -170,10 +173,11 @@
       </div>
     </div>
 
-    <!-- ส่วนที่ 1: สำหรับส่งเข้าห้องครัว (ตัวใหญ่พิเศษ) -->
+    <!-- ส่วนที่ 1: สำหรับส่งเข้าห้องครัว -->
     <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:8px; margin-top:8px;">
       <div style="font-size:12px; font-weight:bold; color:#b45309; margin-bottom:4px;">👨‍🍳 แผนกครัว (หน้าเตา):</div>
-      <button class="btn-act btn-kitchen" onclick="printKitchenTicket()">🍳 พิมพ์ใบสั่งเข้าครัว (ตัวใหญ่พิเศษ)</button>
+      <button class="btn-act btn-kitchen" onclick="printKitchenTicket()">🍳 พิมพ์ใบสั่งเข้าครัว (บลูทูธ)</button>
+      <button class="btn-act btn-kitchen-line" onclick="copyKitchenToLine()">📲 คัดลอกใบครัวส่ง LINE</button>
       <button class="btn-act btn-preview-kitchen" onclick="openKitchenPreview()">👁️ ดูแบบร่างใบครัว</button>
     </div>
 
@@ -181,8 +185,8 @@
     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:8px; margin-top:8px;">
       <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px;">🧾 แผนกคิดเงิน / ลูกค้า:</div>
       <button class="btn-act btn-green" onclick="printReceipt()">🖨️ พิมพ์บิลคิดเงินลูกค้า</button>
-      <button class="btn-act btn-preview" onclick="openPreview()">👁️ ดูแบบร่างบิลคิดเงิน</button>
       <button class="btn-act btn-cyan" onclick="copyReceipt()">📋 คัดลอกบิลส่ง LINE</button>
+      <button class="btn-act btn-preview" onclick="openPreview()">👁️ ดูแบบร่างบิลคิดเงิน</button>
       <button class="btn-act btn-sheet" onclick="exportToCSV()">📊 ดาวน์โหลด Excel/CSV</button>
     </div>
 
@@ -477,7 +481,7 @@
       grandTotalEl.innerText = `${calculateTotal()} ฿`;
     }
 
-    // 1. ข้อความบิลคิดเงินลูกค้า
+    // 1. บิลลูกค้าคิดเงิน
     function buildReceiptText() {
       const cust = document.getElementById('custInfo').value.trim();
       const now = new Date();
@@ -520,7 +524,7 @@
       return t;
     }
 
-    // 2. ข้อความใบสั่งเข้าห้องครัว (ตัวใหญ่ ไม่แสดงราคา เน้นคนทำอ่านง่าย)
+    // 2. ใบสั่งเข้าห้องครัว (ตัวใหญ่ ไม่แสดงราคา)
     function buildKitchenText() {
       const cust = document.getElementById('custInfo').value.trim();
       const now = new Date();
@@ -541,7 +545,13 @@
         
         let details = [];
         if (item.personName.trim()) details.push(item.personName.trim());
-        if (item.eggOption !== 'none') details.push(item.eggOption);
+        if (item.eggOption !== 'none') {
+          if (['เพิ่มไข่ดาว', 'เพิ่มไข่เจียว', 'เพิ่มไข่ข้น'].includes(item.eggOption)) {
+            details.push(`${item.eggOption} (+${item.extraEggPrice})`);
+          } else {
+            details.push(item.eggOption);
+          }
+        }
         if (item.note.trim()) details.push(item.note.trim());
         
         if (details.length > 0) {
@@ -557,7 +567,45 @@
       return t;
     }
 
-    // Modal Preview สลับได้ระหว่างบิลลูกค้า และใบครัว
+    // คัดลอกใบสั่งเข้าครัวส่งทาง LINE
+    function copyKitchenToLine() {
+      if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนคัดลอกครับ");
+      const cust = document.getElementById('custInfo').value.trim();
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      
+      let t = "🍳 [ใบสั่งเข้าครัว] ครัวออยออย\n";
+      t += `เวลา: ${timeStr} น.`;
+      if (cust) t += ` | ${cust}`;
+      t += "\n====================\n";
+
+      billItems.forEach((item, idx) => {
+        let tagStr = "";
+        if (item.isDishOnly) tagStr += " [กับข้าว]";
+        if (item.special) tagStr += " [พิเศษ]";
+
+        t += `#${idx + 1} ${item.name}${tagStr} x${item.qty}\n`;
+        
+        let details = [];
+        if (item.personName.trim()) details.push(item.personName.trim());
+        if (item.eggOption !== 'none') details.push(item.eggOption);
+        if (item.note.trim()) details.push(item.note.trim());
+        
+        if (details.length > 0) {
+          t += `   >> ${details.join(' | ')}\n`;
+        }
+      });
+
+      const totalDishes = billItems.reduce((sum, item) => sum + item.qty, 0);
+      t += "====================\n";
+      t += `รวมทั้งหมด: ${totalDishes} รายการ`;
+
+      navigator.clipboard.writeText(t).then(() => {
+        alert("📲 คัดลอกใบสั่งเข้าครัวเรียบร้อย! นำไปวางส่งใน LINE ได้ทันที");
+      });
+    }
+
+    // ดูแบบร่าง
     function openPreview() {
       if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนครับ");
       document.getElementById('modalTitle').innerText = "ตัวอย่างบิลคิดเงินลูกค้า";
@@ -571,7 +619,7 @@
 
     function openKitchenPreview() {
       if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนครับ");
-      document.getElementById('modalTitle').innerText = "ตัวอย่างใบสั่งเข้าครัว (ตัวใหญ่)";
+      document.getElementById('modalTitle').innerText = "ตัวอย่างใบสั่งเข้าครัว";
       const box = document.getElementById('previewText');
       box.className = "receipt-content kitchen-preview";
       box.innerText = buildKitchenText();
@@ -610,7 +658,6 @@
       }
     }
 
-    // พิมพ์บิลลูกค้าปกติ
     async function printReceipt() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
       if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
@@ -622,21 +669,19 @@
       sendChunks(data);
     }
 
-    // พิมพ์ใบสั่งเข้าครัว (ใช้รหัสคำสั่ง ESC/POS ขยายตัวอักษรใหญ่ หนา 2 เท่า)
     async function printKitchenTicket() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
       if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
 
       const encoder = new TextEncoder();
-      const init = [0x1B, 0x40];                     // รีเซ็ตเครื่องพิมพ์
-      const doubleSize = [0x1D, 0x21, 0x11];         // ขยาย กว้างx2 สูงx2
-      const normalSize = [0x1D, 0x21, 0x00];         // ขนาดปกติ
-      const boldOn = [0x1B, 0x45, 0x01];             // เปิดตัวหนา
-      const boldOff = [0x1B, 0x45, 0x00];            // ปิดตัวหนา
+      const init = [0x1B, 0x40];
+      const doubleSize = [0x1D, 0x21, 0x11];
+      const normalSize = [0x1D, 0x21, 0x00];
+      const boldOn = [0x1B, 0x40, 0x1B, 0x45, 0x01];
+      const boldOff = [0x1B, 0x45, 0x00];
 
       let printData = [...init];
 
-      // หัวกระดาษเข้าครัว
       printData.push(...boldOn, ...doubleSize);
       printData.push(...encoder.encode("[ ใบสั่งเข้าครัว ]\n"));
       printData.push(...normalSize, ...boldOff);
@@ -647,18 +692,15 @@
       printData.push(...encoder.encode(`เวลา: ${timeStr} น.` + (cust ? ` | ${cust}` : '') + "\n"));
       printData.push(...encoder.encode("================================\n\n"));
 
-      // แต่ละรายการอาหาร (ขยายตัวใหญ่เฉพาะชื่อเมนูและจำนวน)
       billItems.forEach((item, idx) => {
         let tagStr = "";
         if (item.isDishOnly) tagStr += " [กับข้าว]";
         if (item.special) tagStr += " [พิเศษ]";
 
-        // บรรทัดชื่อเมนู: ตัวหนา + ตัวใหญ่ 2 เท่า
         printData.push(...boldOn, ...doubleSize);
         printData.push(...encoder.encode(`#${idx + 1} ${item.name}${tagStr} x${item.qty}\n`));
         printData.push(...normalSize, ...boldOff);
 
-        // บรรทัดรายละเอียดคนทาน/ไข่/เผ็ด: ขนาดปกติ
         let details = [];
         if (item.personName.trim()) details.push(item.personName.trim());
         if (item.eggOption !== 'none') details.push(item.eggOption);
