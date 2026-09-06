@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ครัวออยออย - บิล & QR Code ชำระเงิน</title>
+  <title>ครัวออยออย - คิดเงิน & บิลสั่งอาหาร</title>
+  <!-- คลังสร้าง QR Code อัตโนมัติ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -16,16 +17,16 @@
     .status-badge { padding: 4px 10px; border-radius: 12px; background: #e2e8f0; font-size: 11px; font-weight: bold; }
     .status-badge.connected { background: #dcfce7; color: #166534; }
 
-    /* กล่องข้อมูลหัวบิลแบบแยกช่อง */
-    .bill-meta-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    /* กล่องข้อมูลหัวบิล แยกทีละช่องอย่างชัดเจน */
+    .bill-meta-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .meta-group { display: flex; flex-direction: column; }
     .meta-group.full { grid-column: span 2; }
-    .meta-label { font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 2px; }
-    .meta-input { width: 100%; padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; }
+    .meta-label { font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 2px; }
+    .meta-input { width: 100%; padding: 6px 8px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; }
 
     /* นำเข้าจาก LINE */
     .import-box { background: #f0fdf4; border: 1px dashed #22c55e; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
-    .import-box textarea { width: 100%; height: 75px; font-size: 12px; padding: 6px; border-radius: 6px; border: 1px solid #86efac; }
+    .import-box textarea { width: 100%; height: 70px; font-size: 12px; padding: 6px; border-radius: 6px; border: 1px solid #86efac; }
     .btn-parse { background: #16a34a; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; width: 100%; font-size: 13px; margin-top: 4px; cursor: pointer; }
 
     /* แท็บหมวดหมู่ */
@@ -104,6 +105,7 @@
 
     .qr-container { text-align: center; margin: 4px 0 8px 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; }
     #qrcode { display: flex; justify-content: center; margin: 6px 0; }
+    .btn-save-qr { background: #0284c7; color: white; border: none; padding: 5px 12px; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -115,19 +117,27 @@
     </div>
     <button class="btn-act btn-blue" onclick="connectPrinter()">🔌 เชื่อมต่อเครื่องพิมพ์บลูทูธ</button>
 
-    <!-- ข้อมูลหัวบิล แยก เลขที่บิล, วันที่, สถานที่ส่ง -->
+    <!-- กล่องข้อมูลหัวบิล แยกทีละช่องอย่างชัดเจน -->
     <div class="bill-meta-box">
       <div class="meta-group">
-        <label class="meta-label">เลขที่บิล:</label>
+        <label class="meta-label">1. ลำดับที่ / เลขบิล:</label>
         <input type="text" id="billNo" class="meta-input">
       </div>
       <div class="meta-group">
-        <label class="meta-label">วันที่:</label>
-        <input type="date" id="billDate" class="meta-input">
+        <label class="meta-label">2. ชื่อลูกค้า / ผู้สั่ง:</label>
+        <input type="text" id="billCustName" class="meta-input" placeholder="เช่น คุณวิท">
       </div>
       <div class="meta-group full">
-        <label class="meta-label">สถานที่ส่ง / ชื่อลูกค้า:</label>
-        <input type="text" id="billDelivery" class="meta-input" placeholder="เช่น ออฟฟิศชั้น 2, ส่งบ้านคุณวิท">
+        <label class="meta-label">3. สถานที่ส่ง:</label>
+        <input type="text" id="billDelivery" class="meta-input" placeholder="เช่น ตึก A ชั้น 3 (ส่งฟรี 2 กม.)">
+      </div>
+      <div class="meta-group">
+        <label class="meta-label">4. วันที่:</label>
+        <input type="date" id="billDate" class="meta-input">
+      </div>
+      <div class="meta-group">
+        <label class="meta-label">5. เวลา:</label>
+        <input type="time" id="billTime" class="meta-input">
       </div>
     </div>
 
@@ -220,7 +230,7 @@
     <button class="btn-act btn-gray" onclick="clearBill()" style="margin-top:10px;">ล้างรายการบิล</button>
   </div>
 
-  <!-- Modal หน้าต่างจำลองสลิป -->
+  <!-- Modal หน้าต่างจำลองสลิป (พร้อมปุ่มบันทึกรูป QR ลงเครื่อง) -->
   <div id="previewModal" class="modal-overlay">
     <div class="receipt-paper">
       <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -229,10 +239,12 @@
       </div>
       <div id="previewText" class="receipt-content"></div>
       
+      <!-- พื้นที่ QR Code พร้อมปุ่มเซฟรูป -->
       <div id="modalQrBox" class="qr-container" style="display:none;">
         <div style="font-size:13px; font-weight:bold; color:#166534;">สแกนจ่าย: ครัวออยออย</div>
-        <div style="font-size:11px; color:#64748b; margin-bottom:6px;">บัญชี: น.ส. ทัศนีย์ เม่นทอง (K SHOP)</div>
+        <div style="font-size:11px; color:#64748b; margin-bottom:4px;">บัญชี: น.ส. ทัศนีย์ เม่นทอง (K SHOP)</div>
         <div id="qrcode"></div>
+        <button class="btn-save-qr" onclick="saveQrToGallery()">💾 บันทึกรูป QR ลงเครื่อง (ไว้ส่งใน LINE)</button>
       </div>
 
       <div class="modal-btns">
@@ -262,13 +274,17 @@
     let billItems = [];
     let printCharacteristic = null;
 
-    // ตั้งค่าเริ่มต้น: วันที่ปัจจุบัน และ เลขที่บิลอัตโนมัติ
+    // ตั้งค่า วันที่ เวลา และ เลขที่บิล อัตโนมัติ
     function initMeta() {
       const now = new Date();
       const y = now.getFullYear();
       const m = String(now.getMonth() + 1).padStart(2, '0');
       const d = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+
       document.getElementById('billDate').value = `${y}-${m}-${d}`;
+      document.getElementById('billTime').value = `${hh}:${mm}`;
       
       const billCount = localStorage.getItem('oil_bill_seq') || '01';
       document.getElementById('billNo').value = `${y.toString().slice(-2)}${m}${d}-${billCount}`;
@@ -470,8 +486,8 @@
 
     function clearBill() {
       billItems = [];
+      document.getElementById('billCustName').value = "";
       document.getElementById('billDelivery').value = "";
-      // รันเลขที่บิลถัดไป
       let seq = parseInt(localStorage.getItem('oil_bill_seq') || '1') + 1;
       localStorage.setItem('oil_bill_seq', String(seq).padStart(2, '0'));
       initMeta();
@@ -548,7 +564,6 @@
       updateTotals();
     }
 
-    // ฟังก์ชันจัดฟอร์แมตวันที่ให้อ่านง่าย
     function getFormattedDate() {
       const dVal = document.getElementById('billDate').value;
       if (!dVal) return "";
@@ -556,14 +571,13 @@
       return `${d}/${m}/${y}`;
     }
 
-    // บิลคิดเงิน
+    // บิลคิดเงิน (แยก ลำดับ/เลขบิล, ชื่อ, สถานที่ส่ง, วัน, เวลา)
     function buildReceiptText() {
       const bNo = document.getElementById('billNo').value.trim();
-      const bDate = getFormattedDate();
+      const bCust = document.getElementById('billCustName').value.trim();
       const bPlace = document.getElementById('billDelivery').value.trim();
-
-      const now = new Date();
-      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const bDate = getFormattedDate();
+      const bTime = document.getElementById('billTime').value.trim();
       
       let total = 0;
       let paid = 0;
@@ -575,8 +589,9 @@
 
       let t = "🧾 บิลรายการอาหาร ครัวออยออย\n";
       if (bNo) t += `เลขที่บิล: ${bNo}\n`;
-      t += `วันที่: ${bDate} (${timeStr} น.)\n`;
+      if (bCust) t += `ชื่อลูกค้า: ${bCust}\n`;
       if (bPlace) t += `สถานที่ส่ง: ${bPlace}\n`;
+      t += `วัน/เวลา: ${bDate} (${bTime} น.)\n`;
       t += "--------------------------------\n";
 
       billItems.forEach((item, idx) => {
@@ -605,24 +620,24 @@
       }
       t += "--------------------------------\n";
       t += "บัญชี: น.ส. ทัศนีย์ เม่นทอง (K SHOP)\n";
-      t += "[ สแกน QR Code ด้านล่างเพื่อชำระเงิน ]\n";
+      t += "[ สแกน QR Code เพื่อชำระเงิน ]\n";
       t += "ขอบคุณที่อุดหนุนครัวออยออย ครับ 🙏\n";
       return t;
     }
 
-    // ใบสั่งเข้าครัว
+    // ใบสั่งเข้าครัว (แยกหัวบิลเป็นระเบียบ)
     function buildKitchenText() {
       const bNo = document.getElementById('billNo').value.trim();
-      const bDate = getFormattedDate();
+      const bCust = document.getElementById('billCustName').value.trim();
       const bPlace = document.getElementById('billDelivery').value.trim();
-
-      const now = new Date();
-      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const bDate = getFormattedDate();
+      const bTime = document.getElementById('billTime').value.trim();
       
       let t = "================================\n       [ ใบสั่งเข้าครัว ]       \n";
       if (bNo) t += `บิล: ${bNo} | `;
-      t += `เวลา: ${timeStr} น.\n`;
-      if (bPlace) t += `สถานที่ส่ง: ${bPlace}\n`;
+      t += `เวลา: ${bTime} น.\n`;
+      if (bCust) t += `ลูกค้า: ${bCust}\n`;
+      if (bPlace) t += `ส่งที่: ${bPlace}\n`;
       t += "================================\n\n";
 
       billItems.forEach((item, idx) => {
@@ -646,6 +661,7 @@
       return t;
     }
 
+    // วาด QR Code อัตโนมัติในหน้าต่างตัวอย่าง
     function openReceiptPreview() {
       if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนครับ");
       document.getElementById('modalTitle').innerText = "ตัวอย่างบิล & QR Code ชำระเงิน";
@@ -672,6 +688,22 @@
       document.getElementById('previewModal').style.display = 'flex';
     }
 
+    // ฟังก์ชันเซฟรูปภาพ QR Code ลงเครื่อง
+    function saveQrToGallery() {
+      const img = document.querySelector('#qrcode img');
+      if (img && img.src) {
+        const a = document.createElement('a');
+        a.href = img.src;
+        a.download = 'QR_KruaOilOil.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        alert("💾 บันทึกภาพ QR Code ลงเครื่องแล้ว! สามารถกดส่งรูปใน LINE ได้เลยครับ");
+      } else {
+        alert("กำลังโหลด QR Code กรุณากดใหม่อีกครั้ง");
+      }
+    }
+
     function openKitchenPreview() {
       if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนครับ");
       document.getElementById('modalTitle').innerText = "ตัวอย่างใบสั่งเข้าครัว";
@@ -696,11 +728,10 @@
       if (unpaids.length === 0) return alert("ได้รับยอดครบทุกรายการเรียบร้อยแล้วครับ! 🎉");
 
       const bNo = document.getElementById('billNo').value.trim();
-      const bDate = getFormattedDate();
+      const bCust = document.getElementById('billCustName').value.trim();
       const bPlace = document.getElementById('billDelivery').value.trim();
-
-      const now = new Date();
-      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const bDate = getFormattedDate();
+      const bTime = document.getElementById('billTime').value.trim();
       
       let totalBill = 0;
       let paidTotal = 0;
@@ -713,9 +744,9 @@
 
       let t = "📢 สรุปรายการออเดอร์ - ครัวออยออย\n";
       if (bNo) t += `เลขที่บิล: ${bNo}\n`;
-      t += `วันที่: ${bDate} (${timeStr} น.)\n`;
-      if (bPlace) t += `สถานที่ส่ง: ${bPlace}\n`;
-      t += "--------------------------------\n";
+      if (bCust) t += `ลูกค้า: ${bCust}\n`;
+      if (bPlace) t += `ส่งที่: ${bPlace}\n`;
+      t += `วัน/เวลา: ${bDate} (${bTime} น.)\n--------------------------------\n`;
       t += `ยอดรวมทั้งบิล: ${totalBill} บาท\n✅ ได้รับแล้ว: ${paidTotal} บาท\nยอดคงเหลือ: ${dueTotal} บาท\n--------------------------------\nรายการที่รอชำระ:\n`;
 
       unpaids.forEach((item, idx) => {
@@ -809,12 +840,13 @@
       printData.push(...normalSize, ...boldOff);
       
       const bNo = document.getElementById('billNo').value.trim();
+      const bCust = document.getElementById('billCustName').value.trim();
       const bPlace = document.getElementById('billDelivery').value.trim();
-      const now = new Date();
-      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const bTime = document.getElementById('billTime').value.trim();
       
-      let headerStr = `เวลา: ${timeStr} น.`;
+      let headerStr = `เวลา: ${bTime} น.`;
       if (bNo) headerStr += ` | บิล: ${bNo}`;
+      if (bCust) headerStr += `\nลูกค้า: ${bCust}`;
       if (bPlace) headerStr += `\nสถานที่ส่ง: ${bPlace}`;
       printData.push(...encoder.encode(headerStr + "\n================================\n\n"));
 
@@ -858,16 +890,18 @@
     function exportToCSV() {
       if (billItems.length === 0) return alert("ไม่มีข้อมูลรายการอาหาร");
       const bNo = document.getElementById('billNo').value.trim();
-      const bDate = getFormattedDate();
+      const bCust = document.getElementById('billCustName').value.trim();
       const bPlace = document.getElementById('billDelivery').value.trim();
+      const bDate = getFormattedDate();
+      const bTime = document.getElementById('billTime').value.trim();
 
-      let csvContent = "\uFEFFเลขที่บิล,วันที่,สถานที่ส่ง,ลำดับ,รายการอาหาร,จำนวน,ราคา/หน่วย,ยอดรวม,ชื่อคนทาน,สถานะ,หมายเหตุ\n";
+      let csvContent = "\uFEFFเลขที่บิล,ลูกค้า,สถานที่ส่ง,วันที่,เวลา,ลำดับ,รายการอาหาร,จำนวน,ราคา/หน่วย,ยอดรวม,ชื่อคนทาน,สถานะ,หมายเหตุ\n";
 
       billItems.forEach((item, idx) => {
         const unitPrice = getItemUnitPrice(item);
         const lineTotal = unitPrice * item.qty;
         const status = item.isPaid ? 'ได้รับเงินแล้ว' : 'รอชำระ';
-        csvContent += `"${bNo}","${bDate}","${bPlace}",${idx + 1},"${item.name}",${item.qty},${unitPrice},${lineTotal},"${item.personName}","${status}","${item.note}"\n`;
+        csvContent += `"${bNo}","${bCust}","${bPlace}","${bDate}","${bTime}",${idx + 1},"${item.name}",${item.qty},${unitPrice},${lineTotal},"${item.personName}","${status}","${item.note}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
