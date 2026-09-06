@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ครัวออยออย - คิดเงิน & ประวัติบิลรายวัน</title>
+  <title>ครัวออยออย - พิมพ์ข้อความ LINE ด่วน</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -28,10 +28,12 @@
     .meta-label { font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 2px; }
     .meta-input { width: 100%; padding: 6px 8px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; }
 
-    /* นำเข้าจาก LINE */
+    /* นำเข้าจาก LINE พร้อมปุ่มพิมพ์ด่วน */
     .import-box { background: #f0fdf4; border: 1px dashed #22c55e; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
-    .import-box textarea { width: 100%; height: 70px; font-size: 12px; padding: 6px; border-radius: 6px; border: 1px solid #86efac; }
-    .btn-parse { background: #16a34a; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; width: 100%; font-size: 13px; margin-top: 4px; cursor: pointer; }
+    .import-box textarea { width: 100%; height: 80px; font-size: 12px; padding: 6px; border-radius: 6px; border: 1px solid #86efac; margin-bottom: 6px; }
+    .line-action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .btn-parse { background: #16a34a; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; width: 100%; font-size: 12px; cursor: pointer; }
+    .btn-print-raw { background: #0284c7; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; width: 100%; font-size: 12px; cursor: pointer; }
 
     /* แท็บหมวดหมู่เมนู */
     .nav-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
@@ -100,7 +102,7 @@
     .btn-sheet { background: #059669; color: white; }
     .btn-gray { background: #64748b; color: white; padding: 8px; font-size: 13px; }
 
-    /* สไตล์หน้าประวัติบิลย้อนหลัง */
+    /* ประวัติบิล */
     .history-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
     .history-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
     .history-meta { font-size: 12px; color: #64748b; margin-bottom: 4px; }
@@ -109,11 +111,11 @@
     .btn-mini-view { background: #0ea5e9; color: white; }
     .btn-mini-del { background: #fee2e2; color: #b91c1c; }
 
-    /* Modal หน้าต่างจำลองสลิป */
+    /* Modal */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; padding: 12px; }
     .receipt-paper { background: #fff; width: 100%; max-width: 360px; max-height: 90vh; border-radius: 8px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
     .receipt-content { font-family: monospace, sans-serif; font-size: 13px; line-height: 1.4; color: #000; overflow-y: auto; white-space: pre-wrap; background: #fafafa; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px; margin: 8px 0; }
-    .receipt-content.kitchen-preview { font-size: 14px; font-weight: bold; background: #fffbeb; border-color: #fef3c7; }
+    .receipt-content.kitchen-preview { font-size: 14px; font-weight: bold; background: #fffbeb; border-color: #fde68a; }
     .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
     .qr-container { text-align: center; margin: 4px 0 8px 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; }
@@ -130,13 +132,13 @@
     </div>
     <button class="btn-act btn-blue" onclick="connectPrinter()">🔌 เชื่อมต่อเครื่องพิมพ์บลูทูธ</button>
 
-    <!-- แท็บสลับหน้า: หน้าคิดเงิน กับ หน้าดูประวัติบิลรายวัน -->
+    <!-- แท็บสลับหน้า -->
     <div class="main-nav">
       <button id="navMainBtn" class="main-nav-btn active" onclick="switchMainPage('pos')">📝 จัดการบิล / ออกบิล</button>
       <button id="navHistBtn" class="main-nav-btn" onclick="switchMainPage('history')">📅 ประวัติบิลย้อนหลัง</button>
     </div>
 
-    <!-- ===== หน้าที่ 1: จัดการบิล / ออกบิล ===== -->
+    <!-- หน้าที่ 1: จัดการบิล / ออกบิล -->
     <div id="pagePos">
       <div class="bill-meta-box">
         <div class="meta-group">
@@ -165,11 +167,14 @@
         </div>
       </div>
 
-      <!-- นำเข้าจาก LINE -->
+      <!-- นำเข้าจาก LINE พร้อมปุ่มพิมพ์ข้อความด่วน -->
       <div class="import-box">
         <div style="font-size:12px; font-weight:bold; color:#166534; margin-bottom:4px;">📥 วางข้อความจาก LINE:</div>
         <textarea id="lineRawText" placeholder="วางข้อความที่ลูกค้าสั่งที่นี่..."></textarea>
-        <button class="btn-parse" onclick="parseLineOrders()">⚡ แปลงข้อความเข้าบิลทันที</button>
+        <div class="line-action-btns">
+          <button class="btn-parse" onclick="parseLineOrders()">⚡ แปลงข้อความเข้าบิล</button>
+          <button class="btn-print-raw" onclick="printRawLineText()">🖨️ พิมพ์ข้อความนี้ออกกระดาษ</button>
+        </div>
       </div>
 
       <!-- แท็บหมวดหมู่ -->
@@ -187,7 +192,7 @@
             <div class="chip-btn" onclick="selectCooking('ข้าวราดทอดกระเทียม', this)">กระเทียม</div>
             <div class="chip-btn" onclick="selectCooking('คะน้า', this)">คะน้า</div>
             <div class="chip-btn" onclick="selectCooking('ผัดผักรวม', this)">ผัดผัก</div>
-            <div class="chip-btn" onclick="selectCooking('ผัดถั่วฝักยาว', this)">ถั่วฝักยาว</div>
+            <div class="chip-btn" onclick="selectCooking('ผัดถั่วฝักยาว', this)">ผัดถั่วฝักยาว</div>
           </div>
         </div>
         <div class="step-box">
@@ -250,11 +255,10 @@
         <button class="btn-act btn-cyan" onclick="copyReceipt()">📋 คัดลอกบิลรวมส่ง LINE</button>
       </div>
 
-      <!-- ปุ่มเริ่มบิลใหม่ (พร้อมบันทึกประวัติอัตโนมัติ) -->
       <button class="btn-act btn-gray" onclick="saveAndClearBill()" style="margin-top:10px;">💾 บันทึกและเริ่มบิลใหม่ (รันเลขบิลถัดไป)</button>
     </div>
 
-    <!-- ===== หน้าที่ 2: ดูประวัติบิลย้อนหลัง ===== -->
+    <!-- หน้าที่ 2: ดูประวัติบิลย้อนหลัง -->
     <div id="pageHistory" style="display: none;">
       <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:10px; margin-bottom:10px;">
         <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px;">🔍 เลือกวันที่ต้องการดูประวัติ:</div>
@@ -264,7 +268,6 @@
         </div>
       </div>
 
-      <!-- กล่องสรุปยอดขายประจำวันที่เลือก -->
       <div class="summary-box" style="margin-bottom:10px; background:#eff6ff; border-color:#bfdbfe;">
         <div style="font-weight:bold; font-size:13px; color:#1e40af; margin-bottom:6px;">📊 สรุปยอดขายประจำวัน:</div>
         <div class="summary-row"><span>จำนวนบิลทั้งหมด:</span><strong id="dailyBillCount">0 บิล</strong></div>
@@ -341,7 +344,6 @@
     }
     window.onload = initMeta;
 
-    // สลับหน้าระหว่าง ออกบิล กับ ดูประวัติ
     function switchMainPage(page) {
       if (page === 'pos') {
         document.getElementById('pagePos').style.display = 'block';
@@ -400,6 +402,30 @@
         isPaid: false
       });
       renderBill();
+    }
+
+    // ฟังก์ชันพิมพ์ข้อความดิบจาก LINE ออกเครื่องพิมพ์ความร้อนทันที
+    async function printRawLineText() {
+      if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
+      const text = document.getElementById('lineRawText').value.trim();
+      if (!text) return alert("กรุณาวางข้อความจาก LINE ก่อนพิมพ์ครับ");
+
+      const encoder = new TextEncoder();
+      const init = [0x1B, 0x40];
+      const boldOn = [0x1B, 0x45, 0x01];
+      const boldOff = [0x1B, 0x45, 0x00];
+      const doubleSize = [0x1D, 0x21, 0x11];
+      const normalSize = [0x1D, 0x21, 0x00];
+
+      let printData = [...init, ...boldOn, ...doubleSize];
+      printData.push(...encoder.encode("[ ออเดอร์จาก LINE ]\n"));
+      printData.push(...normalSize, ...boldOff);
+      printData.push(...encoder.encode("================================\n"));
+      printData.push(...encoder.encode(text + "\n"));
+      printData.push(...encoder.encode("================================\n\n\n"));
+
+      sendChunks(printData);
+      alert("🖨️ ส่งข้อความออกเครื่องพิมพ์เรียบร้อย!");
     }
 
     function parseLineOrders() {
@@ -550,12 +576,10 @@
       document.getElementById('sumDue').innerText = `${due} ฿`;
     }
 
-    // ฟังก์ชันบันทึกประวัติบิลลง LocalStorage
     function saveBillToHistory() {
       if (billItems.length === 0) return;
-
       const bNo = document.getElementById('billNo').value.trim();
-      const bDate = document.getElementById('billDate').value; // YYYY-MM-DD
+      const bDate = document.getElementById('billDate').value;
       const bOrderTime = document.getElementById('billOrderTime').value.trim();
       const bCust = document.getElementById('billCustName').value.trim();
       const bPlace = document.getElementById('billDelivery').value.trim();
@@ -570,40 +594,25 @@
       });
 
       const billRecord = {
-        billNo: bNo,
-        date: bDate,
-        orderTime: bOrderTime,
-        custName: bCust,
-        deliveryPlace: bPlace,
-        deliveryTime: bDelivTime,
+        billNo: bNo, date: bDate, orderTime: bOrderTime, custName: bCust,
+        deliveryPlace: bPlace, deliveryTime: bDelivTime,
         items: JSON.parse(JSON.stringify(billItems)),
-        total: total,
-        paid: paid,
-        due: total - paid,
-        savedAt: new Date().toISOString()
+        total: total, paid: paid, due: total - paid, savedAt: new Date().toISOString()
       };
 
       let history = JSON.parse(localStorage.getItem('oil_bills_history') || '[]');
-      // ตรวจสอบว่าเคยมีเลขบิลนี้แล้วหรือไม่ ถ้ามีให้อัปเดตแทน
       const existIdx = history.findIndex(h => h.billNo === bNo && h.date === bDate);
-      if (existIdx >= 0) {
-        history[existIdx] = billRecord;
-      } else {
-        history.unshift(billRecord); // บิลใหม่อยู่บนสุด
-      }
+      if (existIdx >= 0) { history[existIdx] = billRecord; }
+      else { history.unshift(billRecord); }
       localStorage.setItem('oil_bills_history', JSON.stringify(history));
     }
 
-    // บันทึกและเริ่มบิลใหม่
     function saveAndClearBill() {
-      if (billItems.length > 0) {
-        saveBillToHistory();
-      }
+      if (billItems.length > 0) { saveBillToHistory(); }
       billItems = [];
       document.getElementById('billCustName').value = "";
       document.getElementById('billDelivery').value = "";
       document.getElementById('billDeliveryTime').value = "";
-      
       let seq = parseInt(localStorage.getItem('oil_bill_seq') || '1') + 1;
       localStorage.setItem('oil_bill_seq', String(seq).padStart(2, '0'));
       initMeta();
@@ -794,7 +803,6 @@
 
     function openReceiptPreview() {
       if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนครับ");
-      saveBillToHistory(); // เซฟอัตโนมัติเมื่อกดดูตัวอย่าง
       document.getElementById('modalTitle').innerText = "ตัวอย่างบิล & QR Code ชำระเงิน";
       const box = document.getElementById('previewText');
       box.className = "receipt-content";
@@ -899,7 +907,7 @@
 
     function copyReceipt() {
       if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนคัดลอก");
-      saveBillToHistory(); // เซฟอัตโนมัติ
+      saveBillToHistory();
       navigator.clipboard.writeText(buildReceiptText()).then(() => alert("คัดลอกบิลคิดเงินเรียบร้อย!"));
     }
 
@@ -1028,7 +1036,6 @@
       }
     }
 
-    // ===== ฟังก์ชันระบบจัดการประวัติบิลย้อนหลัง =====
     function setTodayFilter() {
       const now = new Date();
       const y = now.getFullYear();
@@ -1039,11 +1046,9 @@
     }
 
     function renderHistory() {
-      const targetDate = document.getElementById('filterHistoryDate').value; // YYYY-MM-DD
+      const targetDate = document.getElementById('filterHistoryDate').value;
       const container = document.getElementById('historyListContainer');
       const history = JSON.parse(localStorage.getItem('oil_bills_history') || '[]');
-
-      // กรองเฉพาะวันที่เลือก
       const dayBills = history.filter(b => b.date === targetDate);
 
       let totalSales = 0;
@@ -1054,11 +1059,10 @@
         container.innerHTML = '<div style="color:#94a3b8; font-size:13px; text-align:center; padding:20px;">ไม่มีข้อมูลบิลในวันที่เลือก</div>';
       } else {
         let html = "";
-        dayBills.forEach((b, idx) => {
+        dayBills.forEach((b) => {
           totalSales += b.total;
           totalPaid += b.paid;
           totalDue += b.due;
-
           const itemCount = b.items.reduce((s, i) => s + i.qty, 0);
           html += `
             <div class="history-card">
@@ -1087,7 +1091,6 @@
       document.getElementById('dailyDueSales').innerText = `${totalDue} ฿`;
     }
 
-    // ดึงข้อมูลบิลเก่ากลับมาที่หน้าจอคิดเงิน
     function loadBillToEdit(bNo, bDate) {
       const history = JSON.parse(localStorage.getItem('oil_bills_history') || '[]');
       const found = history.find(h => h.billNo === bNo && h.date === bDate);
@@ -1113,7 +1116,6 @@
       renderHistory();
     }
 
-    // ส่งออกไฟล์ CSV สำหรับสรุปยอดขายของวันที่เลือก
     function exportHistoryCSV() {
       const targetDate = document.getElementById('filterHistoryDate').value;
       const history = JSON.parse(localStorage.getItem('oil_bills_history') || '[]');
@@ -1121,14 +1123,14 @@
 
       if (dayBills.length === 0) return alert("ไม่มีข้อมูลบิลในวันที่เลือก");
 
-      let csvContent = "\uFEFFเลขที่บิล,วันที่,เวลารับ,เวลาส่ง,ลูกค้า,สถานที่ส่ง,รายการอาหาร,จำนวน,ราคา/หน่วย,ยอดรวม,ชื่อคนทาน,สถานะ\n";
+      let csvContent = "\uFEFFเลขที่บิล,วันที่,เวลารับ,เวลาส่ง,ลูกค้า,สถานที่ส่ง,รายการอาหาร,จำนวน,ราคา/หน่วย,ยอดรวม,ชื่อคนทาน,สถานะ,หมายเหตุ\n";
 
       dayBills.forEach(b => {
         b.items.forEach(item => {
           const unitPrice = getItemUnitPrice(item);
           const lineTotal = unitPrice * item.qty;
           const status = item.isPaid ? 'จ่ายแล้ว' : 'รอชำระ';
-          csvContent += `"${b.billNo}","${b.date}","${b.orderTime}","${b.deliveryTime}","${b.custName}","${b.deliveryPlace}","${item.name}",${item.qty},${unitPrice},${lineTotal},"${item.personName}","${status}"\n`;
+          csvContent += `"${b.billNo}","${b.date}","${b.orderTime}","${b.deliveryTime}","${b.custName}","${b.deliveryPlace}","${item.name}",${item.qty},${unitPrice},${lineTotal},"${item.personName}","${status}","${item.note}"\n`;
         });
       });
 
