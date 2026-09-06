@@ -15,19 +15,19 @@
     .status-badge { padding: 4px 10px; border-radius: 12px; background: #e2e8f0; font-size: 11px; font-weight: bold; }
     .status-badge.connected { background: #dcfce7; color: #166534; }
 
-    /* แถบหมวดหมู่หลัก 3 ส่วน */
+    /* แท็บสลับ 3 หมวดหมู่หลัก */
     .nav-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
     .nav-tab { flex: 1; padding: 8px 4px; text-align: center; background: #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: bold; border: none; cursor: pointer; color: #475569; }
     .nav-tab.active { background: #b91c1c; color: white; }
 
     /* สไตล์ปุ่มเมนูแนะนำและเมนูอื่นๆ */
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 290px; overflow-y: auto; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 280px; overflow-y: auto; }
     .btn-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
     .btn-card:active { background: #fee2e2; }
     .btn-card .name { font-size: 13px; font-weight: 600; line-height: 1.2; }
     .btn-card .price { font-size: 12px; color: #b91c1c; font-weight: bold; }
 
-    /* สไตล์ส่วนอาหารจานด่วน (เลือกการทำ + เลือกเนื้อสัตว์) */
+    /* ส่วนอาหารจานด่วน */
     .step-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-bottom: 8px; }
     .step-title { font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 6px; }
     .chips-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
@@ -39,23 +39,23 @@
     .meat-btn:active { background: #fee2e2; }
     .meat-btn span.p { font-size: 11px; color: #b91c1c; }
 
-    /* บิลแจ้งรายการ */
+    /* บิลเรียกเก็บเงิน */
     .bill-box { border: 2px dashed #cbd5e1; border-radius: 10px; padding: 8px; background: #fff; margin-top: 8px; }
-    .bill-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 6px; }
+    .bill-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 8px; }
     .bill-item-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; }
     
-    .pill-box { display: flex; gap: 4px; margin: 4px 0; flex-wrap: wrap; }
-    .pill { font-size: 11px; padding: 2px 6px; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; }
+    .pill-group { display: flex; gap: 4px; margin: 4px 0; flex-wrap: wrap; }
+    .pill { font-size: 11px; padding: 3px 6px; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; }
     .pill.active { background: #fef08a; border-color: #eab308; font-weight: bold; color: #854d0e; }
+    .pill.active-opt { background: #fee2e2; border-color: #f87171; font-weight: bold; color: #991b1b; }
 
-    .bill-actions { display: flex; justify-content: space-between; align-items: center; }
+    .bill-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
     .qty-ctrl { display: flex; align-items: center; gap: 6px; }
     .qty-b { width: 24px; height: 24px; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff; font-size: 14px; font-weight: bold; }
     .note-in { width: 100%; padding: 4px 6px; font-size: 12px; border-radius: 4px; border: 1px solid #e2e8f0; margin-top: 4px; }
 
     .grand-total { display: flex; justify-content: space-between; font-size: 17px; font-weight: bold; color: #b91c1c; padding-top: 6px; }
     
-    /* ปุ่มส่งงาน */
     .btn-act { width: 100%; padding: 10px; font-size: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 6px; }
     .btn-blue { background: #0284c7; color: white; padding: 6px; font-size: 12px; margin-bottom: 6px; }
     .btn-green { background: #16a34a; color: white; }
@@ -74,14 +74,14 @@
     <button class="btn-act btn-blue" onclick="connectPrinter()">🔌 เชื่อมต่อเครื่องพิมพ์บลูทูธ</button>
     <input type="text" id="custInfo" class="cust" placeholder="ชื่อลูกค้า / เบอร์โทร / สถานที่ส่ง (ส่งฟรี 2 กม.)">
 
-    <!-- แท็บสลับ 3 หมวดหมู่ตามโบรชัวร์ -->
+    <!-- แท็บสลับหมวดหมู่ -->
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="setTab('fast')">🍛 อาหารจานด่วน</button>
       <button class="nav-tab" onclick="setTab('rec')">⭐ อาหารแนะนำ</button>
       <button class="nav-tab" onclick="setTab('etc')">🥚 เมนูอื่นๆ</button>
     </div>
 
-    <!-- ส่วนที่ 1: อาหารจานด่วน (เลือกประเภทการผัด -> เลือกเนื้อสัตว์) -->
+    <!-- ส่วนที่ 1: อาหารจานด่วน -->
     <div id="tabFast">
       <div class="step-box">
         <div class="step-title">1. เลือกประเภทการปรุง / จานด่วน:</div>
@@ -119,7 +119,7 @@
       </div>
     </div>
 
-    <!-- ส่วนที่ 2: เมนูอาหารแนะนำ -->
+    <!-- ส่วนที่ 2: อาหารแนะนำ -->
     <div id="tabRec" style="display: none;">
       <div class="grid-2" id="recMenuContainer"></div>
     </div>
@@ -167,7 +167,6 @@
   </div>
 
   <script>
-    // ข้อมูลอาหารแนะนำตามโบรชัวร์
     const recList = [
       { name: "กะเพราหมูสับ", p: 50 }, { name: "กะเพราหมูกรอบ", p: 65 },
       { name: "กะเพราทะเล (กุ้ง/หมึก)", p: 65 }, { name: "กะเพราเนื้อ", p: 60 },
@@ -188,7 +187,6 @@
     let billItems = [];
     let printCharacteristic = null;
 
-    // เปลี่ยนแท็บ
     function setTab(tab) {
       document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
       event.target.classList.add('active');
@@ -197,7 +195,6 @@
       document.getElementById('tabEtc').style.display = tab === 'etc' ? 'block' : 'none';
     }
 
-    // สร้างปุ่มอาหารแนะนำ
     const recContainer = document.getElementById('recMenuContainer');
     recList.forEach(m => {
       const el = document.createElement('div');
@@ -207,35 +204,39 @@
       recContainer.appendChild(el);
     });
 
-    // 1. อาหารจานด่วน: เลือกประเภทการปรุง
     function selectCooking(type, btn) {
       selectedCookingType = type;
       document.querySelectorAll('#tabFast .chip-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
     }
 
-    // 2. อาหารจานด่วน: กดเนื้อสัตว์เพื่อประกอบชื่อ
     function addCustomFast(meat, price) {
       const fullName = `${selectedCookingType}${meat}`;
       addDirect(fullName, price);
     }
 
-    // เพิ่มรายการลงบิล
+    // เพิ่มรายการลงบิล (ค่าเริ่มต้น: ไม่เอาไข่ และไม่ใช่กับข้าว)
     function addDirect(name, price) {
       billItems.push({
         id: Date.now() + Math.random(),
         name: name,
         price: price,
         qty: 1,
-        egg: 'ดาวฟรี', // แถมฟรีตามโบรชัวร์
+        eggOption: 'none', // none, 'ดาวฟรี', 'เจียวฟรี', 'ดาว2ฟอง', 'เจียว2ฟอง'
+        isDishOnly: false, // เป็นกับข้าวหรือไม่
         special: false,
         note: ''
       });
       renderBill();
     }
 
-    function toggleEgg(idx, type) {
-      billItems[idx].egg = billItems[idx].egg === type ? 'ไม่รับไข่' : type;
+    function setEgg(idx, option) {
+      billItems[idx].eggOption = billItems[idx].eggOption === option ? 'none' : option;
+      renderBill();
+    }
+
+    function toggleDishOnly(idx) {
+      billItems[idx].isDishOnly = !billItems[idx].isDishOnly;
       renderBill();
     }
 
@@ -254,11 +255,17 @@
       billItems[idx].note = text;
     }
 
+    // คำนวณราคาต่อจาน:
+    // ราคาอาหาร + สั่งพิเศษ (+10) + ไข่ดาว 2 ฟอง คิดเงินฟองที่สอง (+10)
+    function getItemUnitPrice(item) {
+      let p = item.price;
+      if (item.special) p += 10;
+      if (item.eggOption === 'ดาว2ฟอง' || item.eggOption === 'เจียว2ฟอง') p += 10;
+      return p;
+    }
+
     function calculateTotal() {
-      return billItems.reduce((sum, item) => {
-        const p = item.price + (item.special ? 10 : 0);
-        return sum + (p * item.qty);
-      }, 0);
+      return billItems.reduce((sum, item) => sum + (getItemUnitPrice(item) * item.qty), 0);
     }
 
     function clearBill() {
@@ -279,20 +286,32 @@
 
       let html = "";
       billItems.forEach((item, idx) => {
-        const unitPrice = item.price + (item.special ? 10 : 0);
+        const unitPrice = getItemUnitPrice(item);
         const lineTotal = unitPrice * item.qty;
 
         html += `
           <div class="bill-item">
             <div class="bill-item-header">
-              <span>${item.name} ${item.special ? '<span style="color:#b91c1c;">(พิเศษ)</span>' : ''}</span>
+              <span>
+                ${item.name} 
+                ${item.isDishOnly ? '<b style="color:#b91c1c;">(กับข้าว)</b>' : ''}
+                ${item.special ? '<span style="color:#b91c1c;">(พิเศษ)</span>' : ''}
+              </span>
               <span>${lineTotal} ฿</span>
             </div>
 
-            <div class="pill-box">
-              <span class="pill ${item.egg === 'ดาวฟรี' ? 'active' : ''}" onclick="toggleEgg(${idx}, 'ดาวฟรี')">+ ไข่ดาวฟรี</span>
-              <span class="pill ${item.egg === 'เจียวฟรี' ? 'active' : ''}" onclick="toggleEgg(${idx}, 'เจียวฟรี')">+ ไข่เจียวฟรี</span>
-              <span class="pill ${item.special ? 'active' : ''}" onclick="toggleSpecial(${idx})">+ พิเศษ (+10)</span>
+            <!-- ตัวเลือกไข่ (ฟรี 1 ฟอง / คิดเงินเฉพาะฟองที่ 2) -->
+            <div class="pill-group">
+              <span class="pill ${item.eggOption === 'ดาวฟรี' ? 'active' : ''}" onclick="setEgg(${idx}, 'ดาวฟรี')">+ ไข่ดาวฟรี</span>
+              <span class="pill ${item.eggOption === 'เจียวฟรี' ? 'active' : ''}" onclick="setEgg(${idx}, 'เจียวฟรี')">+ ไข่เจียวฟรี</span>
+              <span class="pill ${item.eggOption === 'ดาว2ฟอง' ? 'active' : ''}" onclick="setEgg(${idx}, 'ดาว2ฟอง')">+ ไข่ดาว 2 ฟอง (+10)</span>
+              <span class="pill ${item.eggOption === 'เจียว2ฟอง' ? 'active' : ''}" onclick="setEgg(${idx}, 'เจียว2ฟอง')">+ ไข่เจียว 2 ฟอง (+10)</span>
+            </div>
+
+            <!-- ตัวเลือกกับข้าว & สั่งพิเศษ -->
+            <div class="pill-group">
+              <span class="pill ${item.isDishOnly ? 'active-opt' : ''}" onclick="toggleDishOnly(${idx})">🍲 เป็นกับข้าว</span>
+              <span class="pill ${item.special ? 'active-opt' : ''}" onclick="toggleSpecial(${idx})">+ สั่งพิเศษ (+10)</span>
             </div>
 
             <div class="bill-actions">
@@ -325,13 +344,23 @@
       t += "--------------------------------\n";
 
       billItems.forEach(item => {
-        const unitPrice = item.price + (item.special ? 10 : 0);
+        const unitPrice = getItemUnitPrice(item);
         const lineTotal = unitPrice * item.qty;
-        t += `${item.name} ${item.special ? '(พิเศษ)' : ''} x${item.qty} = ${lineTotal} บ.\n`;
+        
+        let tags = [];
+        if (item.isDishOnly) tags.push("กับข้าว");
+        if (item.special) tags.push("พิเศษ");
+        const tagStr = tags.length > 0 ? ` (${tags.join(', ')})` : '';
+
+        t += `${item.name}${tagStr} x${item.qty} = ${lineTotal} บ.\n`;
         
         let details = [];
-        if (item.egg && item.egg !== 'ไม่รับไข่') details.push(item.egg);
+        if (item.eggOption === 'ดาวฟรี') details.push("ไข่ดาวฟรี 1 ฟอง");
+        if (item.eggOption === 'เจียวฟรี') details.push("ไข่เจียวฟรี 1 ฟอง");
+        if (item.eggOption === 'ดาว2ฟอง') details.push("ไข่ดาว 2 ฟอง (+10)");
+        if (item.eggOption === 'เจียว2ฟอง') details.push("ไข่เจียว 2 ฟอง (+10)");
         if (item.note.trim()) details.push(item.note.trim());
+        
         if (details.length > 0) t += `  └ (${details.join(', ')})\n`;
       });
 
@@ -342,7 +371,6 @@
       return t;
     }
 
-    // บลูทูธ ESC/POS
     async function connectPrinter() {
       try {
         const device = await navigator.bluetooth.requestDevice({
