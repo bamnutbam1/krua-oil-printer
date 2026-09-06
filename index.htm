@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ครัวออยออย - บิลสั่งอาหาร & เชื่อมต่อชีท</title>
+  <title>ครัวออยออย - บิลสั่งอาหาร</title>
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { padding: 8px; background-color: #f1f5f9; margin: 0; color: #1e293b; }
@@ -15,7 +15,7 @@
     .status-badge { padding: 4px 10px; border-radius: 12px; background: #e2e8f0; font-size: 11px; font-weight: bold; }
     .status-badge.connected { background: #dcfce7; color: #166534; }
 
-    /* ช่องนำเข้าออเดอร์จาก LINE อัตโนมัติ */
+    /* นำเข้าจาก LINE */
     .import-box { background: #f0fdf4; border: 1px dashed #22c55e; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
     .import-box textarea { width: 100%; height: 75px; font-size: 12px; padding: 6px; border-radius: 6px; border: 1px solid #86efac; }
     .btn-parse { background: #16a34a; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; width: 100%; font-size: 13px; margin-top: 4px; cursor: pointer; }
@@ -25,37 +25,43 @@
     .nav-tab { flex: 1; padding: 7px 4px; text-align: center; background: #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; color: #475569; }
     .nav-tab.active { background: #b91c1c; color: white; }
 
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 220px; overflow-y: auto; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 200px; overflow-y: auto; }
     .btn-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
     .btn-card:active { background: #fee2e2; }
     .btn-card .name { font-size: 13px; font-weight: 600; }
     .btn-card .price { font-size: 12px; color: #b91c1c; font-weight: bold; }
 
-    /* ส่วนอาหารจานด่วน */
+    /* จานด่วน */
     .step-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px; margin-bottom: 6px; }
     .chips-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
     .chip-btn { background: #fff; border: 1px solid #cbd5e1; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 600; text-align: center; cursor: pointer; }
     .chip-btn.selected { background: #b91c1c; color: white; border-color: #b91c1c; }
-    .meat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-    .meat-btn { background: #fef2f2; border: 1px solid #fecaca; padding: 6px 2px; border-radius: 6px; font-size: 11px; font-weight: bold; text-align: center; cursor: pointer; color: #991b1b; display: flex; flex-direction: column; }
-
-    /* บิลแจ้งรายการ */
-    .bill-box { border: 2px dashed #cbd5e1; border-radius: 10px; padding: 8px; background: #fff; margin-top: 8px; }
-    .bill-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 6px; }
-    .bill-item-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; }
-    .order-no { background: #b91c1c; color: white; border-radius: 4px; padding: 1px 5px; font-size: 11px; margin-right: 4px; }
     
+    .meat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+    .meat-btn { background: #fef2f2; border: 1px solid #fecaca; padding: 6px 2px; border-radius: 6px; font-size: 12px; font-weight: bold; text-align: center; cursor: pointer; color: #991b1b; display: flex; flex-direction: column; }
+    .meat-btn:active { background: #fee2e2; }
+    .meat-btn span.p { font-size: 10px; color: #b91c1c; margin-top: 2px; }
+
+    /* บิลรายการ */
+    .bill-box { border: 2px dashed #cbd5e1; border-radius: 10px; padding: 8px; background: #fff; margin-top: 8px; }
+    .bill-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 8px; }
+    .bill-item-header { display: flex; justify-content: space-between; align-items: center; }
+    .order-no { background: #b91c1c; color: white; border-radius: 4px; padding: 1px 5px; font-size: 11px; margin-right: 4px; }
+    .item-name-input { flex: 1; border: none; border-bottom: 1px dashed #cbd5e1; font-weight: bold; font-size: 13px; padding: 2px 4px; color: #1e293b; }
+    .btn-delete { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; border-radius: 4px; padding: 2px 6px; font-size: 12px; cursor: pointer; margin-left: 6px; }
+
     .pill-group { display: flex; gap: 4px; margin: 4px 0; flex-wrap: wrap; align-items: center; }
     .pill { font-size: 11px; padding: 2px 6px; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; }
     .pill.active { background: #fef08a; border-color: #eab308; font-weight: bold; color: #854d0e; }
     .pill.active-opt { background: #fee2e2; border-color: #f87171; font-weight: bold; color: #991b1b; }
-    .dish-price-input { width: 55px; padding: 2px 4px; font-size: 11px; font-weight: bold; border-radius: 4px; border: 1px solid #f87171; color: #b91c1c; text-align: center; }
+    
+    .price-input { width: 50px; padding: 2px 4px; font-size: 11px; font-weight: bold; border-radius: 4px; border: 1px solid #f87171; color: #b91c1c; text-align: center; }
 
     .bill-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
     .qty-ctrl { display: flex; align-items: center; gap: 4px; }
     .qty-b { width: 22px; height: 22px; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff; font-size: 13px; font-weight: bold; }
     
-    .row-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px; }
+    .row-inputs { display: grid; grid-template-columns: 1fr 1.2fr; gap: 4px; margin-top: 4px; }
     .sub-input { width: 100%; padding: 4px; font-size: 11px; border-radius: 4px; border: 1px solid #e2e8f0; }
 
     .grand-total { display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; color: #b91c1c; padding-top: 6px; }
@@ -63,11 +69,18 @@
     /* ปุ่มสั่งการ */
     .btn-act { width: 100%; padding: 10px; font-size: 14px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 6px; }
     .btn-blue { background: #0284c7; color: white; padding: 6px; font-size: 12px; margin-bottom: 6px; }
+    .btn-preview { background: #f59e0b; color: white; font-size: 16px; } /* ปุ่มดูตัวอย่างบิล */
     .btn-green { background: #16a34a; color: white; }
     .btn-sheet { background: #059669; color: white; }
     .btn-cyan { background: #0ea5e9; color: white; }
     .btn-gray { background: #64748b; color: white; padding: 6px; font-size: 12px; }
     input.cust { width: 100%; padding: 6px 8px; font-size: 13px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 4px; }
+
+    /* หน้าต่างแสดงแบบร่าง (Modal Preview) */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; padding: 12px; }
+    .receipt-paper { background: #fff; width: 100%; max-width: 360px; max-height: 85vh; border-radius: 8px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
+    .receipt-content { font-family: monospace, sans-serif; font-size: 13px; line-height: 1.4; color: #000; overflow-y: auto; white-space: pre-wrap; background: #fafafa; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px; margin: 10px 0; }
+    .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   </style>
 </head>
 <body>
@@ -77,17 +90,17 @@
       <h2>🍳 ครัวออยออย</h2>
       <div id="btStatus" class="status-badge">ยังไม่เชื่อมต่อ</div>
     </div>
-    <button class="btn-act btn-blue" onclick="connectPrinter()">🔌 เชื่อมต่อเครื่องพิมพ์บลูทูธ</button>
+    <button class="btn-act btn-blue" onclick="connectPrinter()">🔌 เชื่อมต่อเครื่องพิมพ์บลูทูธ (ทำเมื่อพร้อมพิมพ์)</button>
     <input type="text" id="custInfo" class="cust" placeholder="ข้อมูลหัวบิล / ชื่อกลุ่ม / ที่อยู่ส่ง">
 
-    <!-- นำเข้าข้อความออเดอร์จาก LINE อัตโนมัติ -->
+    <!-- นำเข้าข้อความออเดอร์จาก LINE -->
     <div class="import-box">
-      <div style="font-size:12px; font-weight:bold; color:#166534; margin-bottom:4px;">📥 วางข้อความจาก LINE (แยกลำดับ & ชื่อคนให้อัตโนมัติ):</div>
-      <textarea id="lineRawText" placeholder="ตัวอย่าง:&#10;พริกแกงหมูกรอบ เผ็ดๆ ไข่ดาว 1 แบม&#10;ผงกะหรี่ทะเล 2 เอฟ ตาล&#10;กะเพราเนื้อสับเผ็ดๆ + ไข่ดาว 1 วิท"></textarea>
+      <div style="font-size:12px; font-weight:bold; color:#166534; margin-bottom:4px;">📥 วางข้อความจาก LINE:</div>
+      <textarea id="lineRawText" placeholder="วางข้อความที่ลูกค้าส่งมาที่นี่..."></textarea>
       <button class="btn-parse" onclick="parseLineOrders()">⚡ แปลงข้อความเข้าบิลทันที</button>
     </div>
 
-    <!-- แท็บสลับหมวดหมู่ -->
+    <!-- แท็บหมวดหมู่ -->
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="setTab('fast')">🍛 อาหารจานด่วน</button>
       <button class="nav-tab" onclick="setTab('rec')">⭐ อาหารแนะนำ</button>
@@ -97,6 +110,7 @@
     <!-- อาหารจานด่วน -->
     <div id="tabFast">
       <div class="step-box">
+        <div style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:4px;">1. เลือกการปรุง:</div>
         <div class="chips-grid">
           <div class="chip-btn selected" onclick="selectCooking('ผัดกะเพรา', this)">กะเพรา</div>
           <div class="chip-btn" onclick="selectCooking('ผัดพริกแกง', this)">พริกแกง</div>
@@ -107,13 +121,16 @@
         </div>
       </div>
       <div class="step-box">
+        <div style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:4px;">2. เลือกเนื้อสัตว์:</div>
         <div class="meat-grid">
-          <div class="meat-btn" onclick="addCustomFast('หมู-ไก่', 50)">หมู/ไก่<span>50.-</span></div>
-          <div class="meat-btn" onclick="addCustomFast('ตับ', 55)">ตับ<span>55.-</span></div>
-          <div class="meat-btn" onclick="addCustomFast('เนื้อ', 60)">เนื้อ<span>60.-</span></div>
-          <div class="meat-btn" onclick="addCustomFast('หมูกรอบ', 65)">หมูกรอบ<span>65.-</span></div>
-          <div class="meat-btn" onclick="addCustomFast('ทะเล', 65)">ทะเล<span>65.-</span></div>
-          <div class="meat-btn" onclick="addDirect('ผัดบวบหมูสับใส่ไข่', 50)">ผัดบวบหมู<span>50.-</span></div>
+          <div class="meat-btn" onclick="addCustomFast('หมู', 50)">หมู<span class="p">50.-</span></div>
+          <div class="meat-btn" onclick="addCustomFast('ไก่', 50)">ไก่<span class="p">50.-</span></div>
+          <div class="meat-btn" onclick="addCustomFast('กุ้ง', 65)">กุ้ง<span class="p">65.-</span></div>
+          <div class="meat-btn" onclick="addCustomFast('หมึก', 65)">หมึก<span class="p">65.-</span></div>
+          <div class="meat-btn" onclick="addCustomFast('หมูกรอบ', 65)">หมูกรอบ<span class="p">65.-</span></div>
+          <div class="meat-btn" onclick="addCustomFast('ทะเล', 65)">ทะเล<span class="p">65.-</span></div>
+          <div class="meat-btn" onclick="addCustomFast('เนื้อ', 60)">เนื้อ<span class="p">60.-</span></div>
+          <div class="meat-btn" onclick="addCustomFast('ตับ', 55)">ตับ<span class="p">55.-</span></div>
         </div>
       </div>
     </div>
@@ -134,7 +151,7 @@
       </div>
     </div>
 
-    <!-- บิลแจ้งรายการพร้อมเลขลำดับ -->
+    <!-- บิลแจ้งรายการ -->
     <div class="bill-box">
       <div style="font-weight:bold; font-size:13px; border-bottom:1px solid #f1f5f9; padding-bottom:4px; margin-bottom:6px;">
         📋 รายการออเดอร์ในบิล:
@@ -147,19 +164,39 @@
       </div>
     </div>
 
-    <button class="btn-act btn-green" onclick="printReceipt()">🖨️ พิมพ์บิลใบเสร็จ (มีลำดับที่)</button>
+    <!-- ปุ่มดูแบบร่างบิล (ไม่ต้องต่อบลูทูธ) -->
+    <button class="btn-act btn-preview" onclick="openPreview()">👁️ ดูแบบร่างบิลก่อนพิมพ์</button>
+    <button class="btn-act btn-green" onclick="printReceipt()">🖨️ สั่งพิมพ์บิล (ผ่านบลูทูธ)</button>
     <button class="btn-act btn-cyan" onclick="copyReceipt()">📋 คัดลอกบิลส่ง LINE</button>
     <button class="btn-act btn-sheet" onclick="exportToCSV()">📊 ดาวน์โหลดไฟล์ Excel/CSV</button>
     <button class="btn-act btn-gray" onclick="clearBill()">ล้างรายการบิล</button>
   </div>
 
+  <!-- หน้าต่างจำลองกระดาษสลิปบิลจริง (Modal) -->
+  <div id="previewModal" class="modal-overlay">
+    <div class="receipt-paper">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong style="font-size:15px; color:#b91c1c;">ตัวอย่างกระดาษบิลจริง</strong>
+        <span style="font-size:11px; color:#666;">(ยังไม่ต้องต่อบลูทูธ)</span>
+      </div>
+      <div id="previewText" class="receipt-content"></div>
+      <div class="modal-btns">
+        <button class="btn-act btn-gray" style="margin-top:0;" onclick="closePreview()">ปิดหน้าต่าง</button>
+        <button class="btn-act btn-green" style="margin-top:0;" onclick="printReceiptFromModal()">🖨️ สั่งพิมพ์</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const recList = [
       { name: "กะเพราหมูกรอบ", p: 65 }, { name: "กะเพราหมูสับ", p: 50 },
-      { name: "กะเพราทะเล", p: 65 }, { name: "กะเพราเนื้อ", p: 60 },
-      { name: "หมูกรอบคั่วพริกเกลือ", p: 65 }, { name: "ผัดผงกะหรี่ทะเล", p: 65 },
+      { name: "กะเพราไก่", p: 50 }, { name: "กะเพรากุ้ง", p: 65 },
+      { name: "กะเพราหมึก", p: 65 }, { name: "กะเพราทะเล", p: 65 }, 
+      { name: "กะเพราเนื้อ", p: 60 }, { name: "หมูกรอบคั่วพริกเกลือ", p: 65 }, 
+      { name: "ผัดผงกะหรี่กุ้ง", p: 65 }, { name: "ผัดผงกะหรี่ทะเล", p: 65 }, 
       { name: "ผัดผงกะหรี่ หมู/ไก่", p: 55 }, { name: "ข้าวผัดหมู", p: 50 },
-      { name: "ข้าวผัดหมูกรอบ", p: 65 }, { name: "ผัดแตงกวาใส่ไข่", p: 50 },
+      { name: "ข้าวผัดกุ้ง", p: 65 }, { name: "ข้าวผัดหมูกรอบ", p: 65 }, 
+      { name: "ผัดแตงกวาใส่ไข่", p: 50 }, { name: "ผัดบวบหมูสับใส่ไข่", p: 50 },
       { name: "สุกี้ (น้ำ/แห้ง)", p: 55 }, { name: "ต้มยำ (รวมข้าว)", p: 60 }
     ];
 
@@ -194,7 +231,7 @@
       addDirect(`${selectedCookingType}${meat}`, price);
     }
 
-    function addDirect(name, price, person = "", note = "", egg = "none") {
+    function addDirect(name, price, person = "", note = "", egg = "none", extraEggPrice = 10) {
       billItems.push({
         id: Date.now() + Math.random(),
         name: name,
@@ -202,6 +239,7 @@
         dishPrice: 80,
         qty: 1,
         eggOption: egg,
+        extraEggPrice: extraEggPrice,
         isDishOnly: false,
         special: false,
         personName: person,
@@ -210,7 +248,6 @@
       renderBill();
     }
 
-    // ระบบแยกข้อความ LINE อัตโนมัติ
     function parseLineOrders() {
       const text = document.getElementById('lineRawText').value.trim();
       if (!text) return alert("กรุณาวางข้อความก่อนครับ");
@@ -226,17 +263,21 @@
         let note = "";
         let dishPrice = 50;
 
-        // ดึงไข่
-        if (line.includes("ไข่ดาว 2")) { egg = "ดาว2ฟอง"; line = line.replace(/ไข่ดาว\s*2\s*ฟอง|ไข่ดาว\s*2/g, ""); }
-        else if (line.includes("ไข่ดาว")) { egg = "ดาวฟรี"; line = line.replace(/\+?\s*ไข่ดาว/g, ""); }
-        else if (line.includes("ไข่เจียว")) { egg = "เจียวฟรี"; line = line.replace(/\+?\s*ไข่เจียว/g, ""); }
+        if (line.includes("ไข่ดาว 2")) { 
+          egg = "เพิ่มไข่ดาว"; 
+          line = line.replace(/ไข่ดาว\s*2\s*ฟอง|ไข่ดาว\s*2/g, ""); 
+        } else if (line.includes("ไข่ดาว")) { 
+          egg = "ไข่ดาว"; 
+          line = line.replace(/\+?\s*ไข่ดาว/g, ""); 
+        } else if (line.includes("ไข่เจียว")) { 
+          egg = "ไข่เจียว"; 
+          line = line.replace(/\+?\s*ไข่เจียว/g, ""); 
+        }
 
-        // ดึงหมายเหตุเผ็ด/อื่นๆ
         if (line.includes("เผ็ดๆ")) { note += "เผ็ดๆ "; line = line.replace("เผ็ดๆ", ""); }
         if (line.includes("เผ็ดน้อย")) { note += "เผ็ดน้อย "; line = line.replace("เผ็ดน้อย", ""); }
         if (line.includes("ไม่เผ็ด")) { note += "ไม่เผ็ด "; line = line.replace("ไม่เผ็ด", ""); }
 
-        // จับคู่: [เมนู] [จำนวน] [ชื่อคนทาน]
         const match = line.match(/^(.+?)\s+(\d+)\s*(.*)$/);
         let menuName = "";
         if (match) {
@@ -247,10 +288,15 @@
           menuName = line;
         }
 
-        // ประเมินราคาคร่าวๆ
-        if (menuName.includes("หมูกรอบ") || menuName.includes("ทะเล")) dishPrice = 65;
-        else if (menuName.includes("เนื้อ")) dishPrice = 60;
-        else if (menuName.includes("ตับ")) dishPrice = 55;
+        if (menuName.includes("หมูกรอบ") || menuName.includes("ทะเล") || menuName.includes("กุ้ง") || menuName.includes("หมึก")) {
+          dishPrice = 65;
+        } else if (menuName.includes("เนื้อ")) {
+          dishPrice = 60;
+        } else if (menuName.includes("ตับ")) {
+          dishPrice = 55;
+        } else {
+          dishPrice = 50;
+        }
 
         billItems.push({
           id: Date.now() + Math.random(),
@@ -259,6 +305,7 @@
           dishPrice: 80,
           qty: qty,
           eggOption: egg,
+          extraEggPrice: 10,
           isDishOnly: false,
           special: false,
           personName: person,
@@ -270,9 +317,24 @@
       renderBill();
     }
 
+    function deleteItem(idx) {
+      billItems.splice(idx, 1);
+      renderBill();
+    }
+
+    function updateItemName(idx, val) {
+      billItems[idx].name = val;
+    }
+
     function setEgg(idx, option) {
       billItems[idx].eggOption = billItems[idx].eggOption === option ? 'none' : option;
       renderBill();
+    }
+
+    function updateExtraEggPrice(idx, val) {
+      const p = parseFloat(val);
+      billItems[idx].extraEggPrice = isNaN(p) ? 10 : p;
+      updateTotals();
     }
 
     function toggleDishOnly(idx) {
@@ -302,7 +364,9 @@
     function getItemUnitPrice(item) {
       let base = item.isDishOnly ? item.dishPrice : item.price;
       if (item.special) base += 10;
-      if (item.eggOption === 'ดาว2ฟอง' || item.eggOption === 'เจียว2ฟอง') base += 10;
+      if (item.eggOption === 'เพิ่มไข่ดาว') {
+        base += (typeof item.extraEggPrice === 'number' ? item.extraEggPrice : 10);
+      }
       return base;
     }
 
@@ -345,33 +409,35 @@
         html += `
           <div class="bill-item">
             <div class="bill-item-header">
-              <span>
-                <span class="order-no">#${idx + 1}</span>
-                ${item.name} 
-                ${item.isDishOnly ? '<b style="color:#b91c1c;">(กับข้าว)</b>' : ''}
-                ${item.special ? '<span style="color:#b91c1c;">(พิเศษ)</span>' : ''}
-              </span>
-              <span id="lineTotal-${idx}">${lineTotal} ฿</span>
+              <span class="order-no">#${idx + 1}</span>
+              <input type="text" class="item-name-input" value="${item.name}" onchange="updateItemName(${idx}, this.value)">
+              <span id="lineTotal-${idx}" style="margin-left:6px; font-weight:bold;">${lineTotal} ฿</span>
+              <button class="btn-delete" onclick="deleteItem(${idx})">🗑️ ลบ</button>
             </div>
 
             <div class="pill-group">
-              <span class="pill ${item.eggOption === 'ดาวฟรี' ? 'active' : ''}" onclick="setEgg(${idx}, 'ดาวฟรี')">+ ไข่ดาวฟรี</span>
-              <span class="pill ${item.eggOption === 'เจียวฟรี' ? 'active' : ''}" onclick="setEgg(${idx}, 'เจียวฟรี')">+ ไข่เจียวฟรี</span>
-              <span class="pill ${item.eggOption === 'ดาว2ฟอง' ? 'active' : ''}" onclick="setEgg(${idx}, 'ดาว2ฟอง')">+ ไข่ดาว 2 ฟอง (+10)</span>
+              <span class="pill ${item.eggOption === 'ไข่ดาว' ? 'active' : ''}" onclick="setEgg(${idx}, 'ไข่ดาว')">+ ไข่ดาว</span>
+              <span class="pill ${item.eggOption === 'ไข่เจียว' ? 'active' : ''}" onclick="setEgg(${idx}, 'ไข่เจียว')">+ ไข่เจียว</span>
+              <span class="pill ${item.eggOption === 'เพิ่มไข่ดาว' ? 'active' : ''}" onclick="setEgg(${idx}, 'เพิ่มไข่ดาว')">+ เพิ่มไข่ดาว</span>
+              ${item.eggOption === 'เพิ่มไข่ดาว' ? `
+                <input type="number" class="price-input" value="${item.extraEggPrice !== undefined ? item.extraEggPrice : 10}" 
+                       oninput="updateExtraEggPrice(${idx}, this.value)">
+                <span style="font-size:10px; color:#666;">บ.</span>
+              ` : ''}
             </div>
 
             <div class="pill-group">
               <span class="pill ${item.isDishOnly ? 'active-opt' : ''}" onclick="toggleDishOnly(${idx})">🍲 เป็นกับข้าว</span>
               ${item.isDishOnly ? `
-                <input type="number" class="dish-price-input" value="${item.dishPrice}" oninput="updateDishPrice(${idx}, this.value)">
+                <input type="number" class="price-input" value="${item.dishPrice}" oninput="updateDishPrice(${idx}, this.value)">
                 <span style="font-size:10px; color:#666;">บ.</span>
               ` : ''}
               <span class="pill ${item.special ? 'active-opt' : ''}" onclick="toggleSpecial(${idx})">+ พิเศษ (+10)</span>
             </div>
 
             <div class="row-inputs">
-              <input type="text" class="sub-input" placeholder="👤 ชื่อคนทาน (เช่น มุ้ย, แบม)" value="${item.personName}" oninput="updatePerson(${idx}, this.value)">
-              <input type="text" class="sub-input" placeholder="📝 หมายเหตุ (เช่น เผ็ดๆ)" value="${item.note}" oninput="updateNote(${idx}, this.value)">
+              <input type="text" class="sub-input" placeholder="ชื่อคน (เช่น มุ้ย, แบม)" value="${item.personName}" oninput="updatePerson(${idx}, this.value)">
+              <input type="text" class="sub-input" placeholder="หมายเหตุ (เช่น เผ็ดๆ)" value="${item.note}" oninput="updateNote(${idx}, this.value)">
             </div>
 
             <div class="bill-actions">
@@ -390,7 +456,6 @@
       grandTotalEl.innerText = `${calculateTotal()} ฿`;
     }
 
-    // รูปแบบบิลพร้อมเลขลำดับ #1, #2...
     function buildReceiptText() {
       const cust = document.getElementById('custInfo').value.trim();
       const now = new Date();
@@ -411,14 +476,16 @@
         if (item.special) tags.push("พิเศษ");
         const tagStr = tags.length > 0 ? ` (${tags.join(', ')})` : '';
 
-        // แสดงเลขลำดับ #1, #2 นำหน้า
         t += `#${idx + 1} ${item.name}${tagStr} x${item.qty} = ${lineTotal} บ.\n`;
         
         let details = [];
-        if (item.personName.trim()) details.push(`คนทาน: ${item.personName.trim()}`);
-        if (item.eggOption === 'ดาวฟรี') details.push("ไข่ดาวฟรี 1 ฟอง");
-        if (item.eggOption === 'เจียวฟรี') details.push("ไข่เจียวฟรี 1 ฟอง");
-        if (item.eggOption === 'ดาว2ฟอง') details.push("ไข่ดาว 2 ฟอง (+10)");
+        if (item.personName.trim()) details.push(item.personName.trim());
+        if (item.eggOption === 'ไข่ดาว') details.push("ไข่ดาว");
+        if (item.eggOption === 'ไข่เจียว') details.push("ไข่เจียว");
+        if (item.eggOption === 'เพิ่มไข่ดาว') {
+          const ep = item.extraEggPrice !== undefined ? item.extraEggPrice : 10;
+          details.push(`เพิ่มไข่ดาว (+${ep})`);
+        }
         if (item.note.trim()) details.push(item.note.trim());
         
         if (details.length > 0) t += `   └ (${details.join(', ')})\n`;
@@ -431,32 +498,23 @@
       return t;
     }
 
-    // ส่งออกไฟล์ CSV / Excel
-    function exportToCSV() {
-      if (billItems.length === 0) return alert("ไม่มีข้อมูลรายการอาหาร");
-      
-      const now = new Date();
-      const dateStr = now.toLocaleDateString('th-TH');
-      let csvContent = "\uFEFFลำดับ,วันที่,รายการอาหาร,จำนวน,ราคา/หน่วย,ยอดรวม,ชื่อคนทาน,ไข่,หมายเหตุ\n";
-
-      billItems.forEach((item, idx) => {
-        const unitPrice = getItemUnitPrice(item);
-        const lineTotal = unitPrice * item.qty;
-        let egg = item.eggOption === 'none' ? '-' : item.eggOption;
-        csvContent += `${idx + 1},"${dateStr}","${item.name}",${item.qty},${unitPrice},${lineTotal},"${item.personName}","${egg}","${item.note}"\n`;
-      });
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `ครัวออยออย_${now.getFullYear()}${now.getMonth()+1}${now.getDate()}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    // 1. ฟังก์ชันเปิดดูแบบร่างสลิป (ไม่ต้องต่อบลูทูธ)
+    function openPreview() {
+      if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนดูแบบร่างครับ");
+      document.getElementById('previewText').innerText = buildReceiptText();
+      document.getElementById('previewModal').style.display = 'flex';
     }
 
-    // บลูทูธ ESC/POS
+    function closePreview() {
+      document.getElementById('previewModal').style.display = 'none';
+    }
+
+    function printReceiptFromModal() {
+      closePreview();
+      printReceipt();
+    }
+
+    // 2. ฟังก์ชันบลูทูธ ESC/POS
     async function connectPrinter() {
       try {
         const device = await navigator.bluetooth.requestDevice({
@@ -483,7 +541,9 @@
     }
 
     async function printReceipt() {
-      if (!printCharacteristic) return alert("กรุณาเชื่อมต่อเครื่องพิมพ์บลูทูธก่อนครับ");
+      if (!printCharacteristic) {
+        return alert("ยังไม่ได้เชื่อมต่อเครื่องพิมพ์! กรุณากดปุ่มสีฟ้า 'เชื่อมต่อเครื่องพิมพ์บลูทูธ' ด้านบนก่อนครับ");
+      }
       if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
 
       const text = buildReceiptText() + "\n\n";
@@ -502,6 +562,32 @@
       navigator.clipboard.writeText(buildReceiptText()).then(() => {
         alert("คัดลอกบิลเรียบร้อย! นำไปวางส่งในแชต LINE ได้ทันที");
       });
+    }
+
+    function exportToCSV() {
+      if (billItems.length === 0) return alert("ไม่มีข้อมูลรายการอาหาร");
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('th-TH');
+      let csvContent = "\uFEFFลำดับ,วันที่,รายการอาหาร,จำนวน,ราคา/หน่วย,ยอดรวม,ชื่อ,ไข่,หมายเหตุ\n";
+
+      billItems.forEach((item, idx) => {
+        const unitPrice = getItemUnitPrice(item);
+        const lineTotal = unitPrice * item.qty;
+        let egg = item.eggOption === 'none' ? '-' : item.eggOption;
+        if (item.eggOption === 'เพิ่มไข่ดาว') {
+          egg = `เพิ่มไข่ดาว (+${item.extraEggPrice})`;
+        }
+        csvContent += `${idx + 1},"${dateStr}","${item.name}",${item.qty},${unitPrice},${lineTotal},"${item.personName}","${egg}","${item.note}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `ครัวออยออย_${now.getFullYear()}${now.getMonth()+1}${now.getDate()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   </script>
 </body>
