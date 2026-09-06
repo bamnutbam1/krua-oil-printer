@@ -1,4 +1,1025 @@
-rderTime} น. | `;
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ครัวออยออย - คิดเงิน & บิลสั่งอาหาร</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { padding: 8px; background-color: #f1f5f9; margin: 0; color: #1e293b; }
+    
+    .card { background: white; padding: 12px; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 10px; }
+    .header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .header-box h2 { margin: 0; font-size: 20px; color: #b91c1c; }
+    
+    .status-badge { padding: 4px 10px; border-radius: 12px; background: #e2e8f0; font-size: 11px; font-weight: bold; }
+    .status-badge.connected { background: #dcfce7; color: #166534; }
+
+    /* แท็บสลับหน้า */
+    .main-nav { display: flex; gap: 6px; margin-bottom: 8px; }
+    .main-nav-btn { flex: 1; padding: 9px; text-align: center; background: #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: bold; border: none; cursor: pointer; color: #334155; }
+    .main-nav-btn.active { background: #b91c1c; color: white; }
+
+    /* ข้อมูลหัวบิล */
+    .bill-meta-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .meta-group { display: flex; flex-direction: column; }
+    .meta-group.full { grid-column: span 2; }
+    .meta-label { font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 2px; }
+    .meta-input { width: 100%; padding: 6px 8px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; }
+
+    /* นำเข้าจาก LINE */
+    .import-box { background: #f0fdf4; border: 1px dashed #22c55e; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+    .import-box textarea { width: 100%; height: 70px; font-size: 12px; padding: 6px; border-radius: 6px; border: 1px solid #86efac; margin-bottom: 6px; }
+    .line-action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .btn-parse { background: #16a34a; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; width: 100%; font-size: 12px; cursor: pointer; }
+    .btn-print-raw { background: #0284c7; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; width: 100%; font-size: 12px; cursor: pointer; }
+
+    /* แท็บหมวดหมู่ */
+    .nav-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+    .nav-tab { flex: 1; padding: 7px 4px; text-align: center; background: #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; color: #475569; }
+    .nav-tab.active { background: #475569; color: white; }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 180px; overflow-y: auto; }
+    .btn-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .btn-card:active { background: #fee2e2; }
+    .btn-card .name { font-size: 13px; font-weight: 600; }
+    .btn-card .price { font-size: 12px; color: #b91c1c; font-weight: bold; }
+
+    /* จานด่วน */
+    .step-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px; margin-bottom: 6px; }
+    .chips-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+    .chip-btn { background: #fff; border: 1px solid #cbd5e1; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 600; text-align: center; cursor: pointer; }
+    .chip-btn.selected { background: #b91c1c; color: white; border-color: #b91c1c; }
+    
+    .meat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+    .meat-btn { background: #fef2f2; border: 1px solid #fecaca; padding: 6px 2px; border-radius: 6px; font-size: 12px; font-weight: bold; text-align: center; cursor: pointer; color: #991b1b; display: flex; flex-direction: column; }
+    .meat-btn span.p { font-size: 10px; color: #b91c1c; margin-top: 2px; }
+
+    /* บิลรายการ */
+    .bill-box { border: 2px dashed #cbd5e1; border-radius: 10px; padding: 8px; background: #fff; margin-top: 8px; }
+    .bill-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 8px; }
+    .bill-item.is-paid { background: #f0fdf4; border-radius: 6px; padding: 6px; }
+    .bill-item-header { display: flex; justify-content: space-between; align-items: center; }
+    .order-no { background: #b91c1c; color: white; border-radius: 4px; padding: 1px 5px; font-size: 11px; margin-right: 4px; }
+    .item-name-input { flex: 1; border: none; border-bottom: 1px dashed #cbd5e1; font-weight: bold; font-size: 13px; padding: 2px 4px; color: #1e293b; background: transparent; }
+    
+    .btn-pay-toggle { padding: 4px 8px; font-size: 11px; font-weight: bold; border-radius: 6px; border: 1px solid; cursor: pointer; }
+    .btn-pay-toggle.unpaid { background: #fef2f2; color: #b91c1c; border-color: #fca5a5; }
+    .btn-pay-toggle.paid { background: #dcfce7; color: #166534; border-color: #86efac; }
+    
+    .btn-delete { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; border-radius: 4px; padding: 2px 6px; font-size: 11px; cursor: pointer; margin-left: 4px; }
+
+    .pill-group { display: flex; gap: 4px; margin: 4px 0; flex-wrap: wrap; align-items: center; }
+    .pill { font-size: 11px; padding: 2px 6px; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; }
+    .pill.active { background: #fef08a; border-color: #eab308; font-weight: bold; color: #854d0e; }
+    .pill.active-opt { background: #fee2e2; border-color: #f87171; font-weight: bold; color: #991b1b; }
+    .price-input { width: 45px; padding: 2px 4px; font-size: 11px; font-weight: bold; border-radius: 4px; border: 1px solid #f87171; color: #b91c1c; text-align: center; }
+
+    /* ช่องแก้ไขราคาต่อหน่วย */
+    .unit-price-edit { width: 55px; padding: 2px 4px; font-size: 12px; font-weight: bold; border-radius: 4px; border: 1px solid #cbd5e1; color: #b91c1c; text-align: center; background: #fff; }
+
+    /* ช่องกรอกพิเศษอื่นๆ */
+    .custom-special-box { display: flex; gap: 4px; align-items: center; margin-top: 4px; background: #fffbeb; padding: 4px; border-radius: 6px; border: 1px solid #fde68a; }
+    .custom-special-name { flex: 1; padding: 3px 6px; font-size: 11px; border-radius: 4px; border: 1px solid #cbd5e1; }
+    .custom-special-price { width: 50px; padding: 3px 4px; font-size: 11px; font-weight: bold; border-radius: 4px; border: 1px solid #cbd5e1; text-align: center; color: #b91c1c; }
+
+    .bill-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+    .qty-ctrl { display: flex; align-items: center; gap: 4px; }
+    .qty-b { width: 22px; height: 22px; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff; font-size: 13px; font-weight: bold; }
+    
+    .row-inputs { display: grid; grid-template-columns: 1fr 1.2fr; gap: 4px; margin-top: 4px; }
+    .sub-input { width: 100%; padding: 4px; font-size: 11px; border-radius: 4px; border: 1px solid #e2e8f0; }
+
+    /* สรุปยอดเงิน */
+    .summary-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-top: 8px; font-size: 13px; }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .summary-row.due { font-size: 16px; font-weight: bold; color: #b91c1c; border-top: 1px dashed #cbd5e1; padding-top: 6px; margin-top: 4px; }
+
+    /* ปุ่มสั่งการ */
+    .btn-act { width: 100%; padding: 10px; font-size: 14px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 6px; }
+    .btn-blue { background: #0284c7; color: white; padding: 6px; font-size: 12px; margin-bottom: 6px; }
+    .btn-kitchen { background: #d97706; color: white; font-size: 15px; }
+    .btn-kitchen-line { background: #06c755; color: white; font-size: 14px; }
+    .btn-preview-kitchen { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 13px; }
+    
+    .btn-remind { background: #b91c1c; color: white; font-size: 14px; }
+    .btn-green { background: #16a34a; color: white; font-size: 15px; }
+    .btn-preview { background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; font-size: 13px; }
+    .btn-cyan { background: #0ea5e9; color: white; }
+    .btn-sheet { background: #059669; color: white; }
+    .btn-gray { background: #64748b; color: white; padding: 8px; font-size: 13px; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; padding: 12px; }
+    .receipt-paper { background: #fff; width: 100%; max-width: 360px; max-height: 90vh; border-radius: 8px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
+    .receipt-content { font-family: monospace, sans-serif; font-size: 13px; line-height: 1.4; color: #000; overflow-y: auto; white-space: pre-wrap; background: #fafafa; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px; margin: 8px 0; }
+    .receipt-content.kitchen-preview { font-size: 14px; font-weight: bold; background: #fffbeb; border-color: #fde68a; }
+    .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .qr-container { text-align: center; margin: 4px 0 8px 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; }
+    #qrcode { display: flex; justify-content: center; margin: 6px 0; }
+    .btn-save-qr { background: #0284c7; color: white; border: none; padding: 5px 12px; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 4px; }
+
+    /* ประวัติบิล */
+    .history-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+    .history-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+    .history-meta { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+    .history-actions { display: flex; gap: 6px; margin-top: 6px; }
+    .btn-mini { padding: 4px 8px; font-size: 11px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
+    .btn-mini-view { background: #0ea5e9; color: white; }
+    .btn-mini-del { background: #fee2e2; color: #b91c1c; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="header-box">
+      <h2>🍳 ครัวออยออย</h2>
+      <div id="btStatus" class="status-badge">ยังไม่เชื่อมต่อ</div>
+    </div>
+    <button class="btn-act btn-blue" onclick="connectPrinter()">🔌 เชื่อมต่อเครื่องพิมพ์บลูทูธ</button>
+
+    <div class="main-nav">
+      <button id="navMainBtn" class="main-nav-btn active" onclick="switchMainPage('pos')">📝 จัดการบิล / ออกบิล</button>
+      <button id="navHistBtn" class="main-nav-btn" onclick="switchMainPage('history')">📅 ประวัติบิลย้อนหลัง</button>
+    </div>
+
+    <!-- หน้าที่ 1: จัดการบิล / ออกบิล -->
+    <div id="pagePos">
+      <div class="bill-meta-box">
+        <div class="meta-group">
+          <label class="meta-label">เลขที่บิล:</label>
+          <input type="text" id="billNo" class="meta-input" placeholder="เช่น 01">
+        </div>
+        <div class="meta-group">
+          <label class="meta-label">วันที่:</label>
+          <input type="date" id="billDate" class="meta-input">
+        </div>
+        <div class="meta-group full">
+          <label class="meta-label">เวลาที่รับออเดอร์:</label>
+          <input type="text" id="billOrderTime" class="meta-input" placeholder="เช่น 11:15">
+        </div>
+        <div class="meta-group full">
+          <label class="meta-label">ชื่อลูกค้า:</label>
+          <input type="text" id="billCustName" class="meta-input" placeholder="เช่น คุณวิท">
+        </div>
+        <div class="meta-group full">
+          <label class="meta-label">สถานที่ส่ง:</label>
+          <input type="text" id="billDelivery" class="meta-input" placeholder="เช่น ตึก A ชั้น 3 (ส่งฟรี 2 กม.)">
+        </div>
+        <div class="meta-group full">
+          <label class="meta-label">เวลาที่ให้จัดส่ง:</label>
+          <input type="text" id="billDeliveryTime" class="meta-input" placeholder="เช่น 12:00 หรือ ก่อนเที่ยง">
+        </div>
+      </div>
+
+      <!-- นำเข้าจาก LINE -->
+      <div class="import-box">
+        <div style="font-size:12px; font-weight:bold; color:#166534; margin-bottom:4px;">📥 วางข้อความจาก LINE:</div>
+        <textarea id="lineRawText" placeholder="วางข้อความที่ลูกค้าสั่งที่นี่..."></textarea>
+        <div class="line-action-btns">
+          <button class="btn-parse" onclick="parseLineOrders()">⚡ แปลงข้อความเข้าบิล</button>
+          <button class="btn-print-raw" onclick="printRawLineText()">🖨️ พิมพ์ข้อความนี้ออกกระดาษ</button>
+        </div>
+      </div>
+
+      <!-- แท็บหมวดหมู่ (เพิ่ม ข้าวผัด, เอาผัดถั่วฝักยาวออก) -->
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="setTab('fast')">🍛 จานด่วน</button>
+        <button class="nav-tab" onclick="setTab('rec')">⭐ เมนูแนะนำ</button>
+        <button class="nav-tab" onclick="setTab('etc')">🥚 เมนูอื่นๆ</button>
+      </div>
+
+      <div id="tabFast">
+        <div class="step-box">
+          <div class="chips-grid">
+            <div class="chip-btn selected" onclick="selectCooking('ผัดกะเพรา', this)">กะเพรา</div>
+            <div class="chip-btn" onclick="selectCooking('ผัดพริกแกง', this)">พริกแกง</div>
+            <div class="chip-btn" onclick="selectCooking('ข้าวราดทอดกระเทียม', this)">กระเทียม</div>
+            <div class="chip-btn" onclick="selectCooking('ข้าวผัด', this)">ข้าวผัด</div>
+            <div class="chip-btn" onclick="selectCooking('คะน้า', this)">คะน้า</div>
+            <div class="chip-btn" onclick="selectCooking('ผัดผักรวม', this)">ผัดผัก</div>
+          </div>
+        </div>
+        <div class="step-box">
+          <div class="meat-grid">
+            <div class="meat-btn" onclick="addCustomFast('หมูสับ', 50)">หมูสับ<span class="p">50.-</span></div>
+            <div class="meat-btn" onclick="addCustomFast('หมูชิ้น', 50)">หมูชิ้น<span class="p">50.-</span></div>
+            <div class="meat-btn" onclick="addCustomFast('ไก่', 50)">ไก่<span class="p">50.-</span></div>
+            <div class="meat-btn" onclick="addCustomFast('หมูกรอบ', 65)">หมูกรอบ<span class="p">65.-</span></div>
+            <div class="meat-btn" onclick="addCustomFast('กุ้ง', 65)">กุ้ง<span class="p">65.-</span></div>
+            <div class="meat-btn" onclick="addCustomFast('หมึก', 65)">หมึก<span class="p">65.-</span></div>
+            <div class="meat-btn" onclick="addCustomFast('ทะเล', 65)">ทะเล<span class="p">65.-</span></div>
+            <div class="meat-btn" onclick="addCustomFast('เนื้อ', 60)">เนื้อ<span class="p">60.-</span></div>
+            <div class="meat-btn" onclick="addCustomFast('ตับ', 55)">ตับ<span class="p">55.-</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tabRec" style="display: none;">
+        <div class="grid-2" id="recMenuContainer"></div>
+      </div>
+
+      <div id="tabEtc" style="display: none;">
+        <div class="grid-2">
+          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวหมูสับ', 40)"><span class="name">ข้าวไข่เจียวหมูสับ</span><span class="price">40.-</span></div>
+          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวทรงเครื่อง', 40)"><span class="name">ข้าวไข่เจียวทรงเครื่อง</span><span class="price">40.-</span></div>
+          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียว 2 ฟอง', 30)"><span class="name">ข้าวไข่เจียว 2 ฟอง</span><span class="price">30.-</span></div>
+          <div class="btn-card" onclick="addDirect('ข้าวไข่ดาว 2 ฟอง', 30)"><span class="name">ข้าวไข่ดาว 2 ฟอง</span><span class="price">30.-</span></div>
+          <div class="btn-card" onclick="addDirect('ข้าวเปล่า', 10)"><span class="name">ข้าวเปล่า</span><span class="price">10.-</span></div>
+        </div>
+      </div>
+
+      <!-- บิลรายการ -->
+      <div class="bill-box">
+        <div style="font-weight:bold; font-size:13px; border-bottom:1px solid #f1f5f9; padding-bottom:4px; margin-bottom:6px;">
+          📋 รายการออเดอร์:
+        </div>
+        <div id="billContainer"><span style="color:#94a3b8; font-size:12px;">ยังไม่มีรายการ</span></div>
+        
+        <div class="summary-box">
+          <div class="summary-row"><span>ยอดรวมทั้งหมด:</span><strong id="sumTotal">0 ฿</strong></div>
+          <div class="summary-row" style="color: #166534;"><span>✅ ได้รับเงินแล้ว:</span><strong id="sumPaid">0 ฿</strong></div>
+          <div class="summary-row due"><span>ยอดคงเหลือ:</span><span id="sumDue">0 ฿</span></div>
+        </div>
+      </div>
+
+      <!-- แผนกห้องครัว -->
+      <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:8px; margin-top:8px;">
+        <div style="font-size:12px; font-weight:bold; color:#b45309; margin-bottom:4px;">👨‍🍳 แผนกครัว (หน้าเตา):</div>
+        <button class="btn-act btn-preview-kitchen" onclick="openKitchenPreview()">👁️ ดูตัวอย่างใบครัว</button>
+        <button class="btn-act btn-kitchen" onclick="printKitchenTicket()">🍳 พิมพ์ใบสั่งเข้าครัว</button>
+        <button class="btn-act btn-kitchen-line" onclick="copyKitchenToLine()">📲 คัดลอกใบครัวส่ง LINE</button>
+      </div>
+
+      <!-- แผนกคิดเงิน -->
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:8px; margin-top:8px;">
+        <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px;">🧾 แผนกคิดเงิน & ลูกค้า:</div>
+        <button class="btn-act btn-preview" onclick="openReceiptPreview()">👁️ ดูตัวอย่างบิล & QR Code ชำระเงิน</button>
+        <button class="btn-act btn-green" onclick="printReceipt()">🖨️ พิมพ์บิลคิดเงินลูกค้า (พร้อม QR)</button>
+        <button class="btn-act btn-remind" onclick="copyUnpaidReminder()">📢 คัดลอกสรุปรายการที่รอชำระส่ง LINE</button>
+        <button class="btn-act btn-cyan" onclick="copyReceipt()">📋 คัดลอกบิลรวมส่ง LINE</button>
+      </div>
+
+      <button class="btn-act btn-gray" onclick="saveAndClearBill()" style="margin-top:10px;">💾 บันทึกและเริ่มบิลใหม่ (รันเลขบิลถัดไป)</button>
+    </div>
+
+    <!-- หน้าที่ 2: ดูประวัติบิลย้อนหลัง -->
+    <div id="pageHistory" style="display: none;">
+      <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:10px; margin-bottom:10px;">
+        <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px;">🔍 เลือกวันที่ต้องการดูประวัติ:</div>
+        <div style="display:flex; gap:6px;">
+          <input type="date" id="filterHistoryDate" class="meta-input" onchange="renderHistory()">
+          <button class="btn-act btn-blue" style="margin-top:0; width:auto; padding:6px 12px;" onclick="setTodayFilter()">วันนี้</button>
+        </div>
+      </div>
+
+      <div class="summary-box" style="margin-bottom:10px; background:#eff6ff; border-color:#bfdbfe;">
+        <div style="font-weight:bold; font-size:13px; color:#1e40af; margin-bottom:6px;">📊 สรุปยอดขายประจำวัน:</div>
+        <div class="summary-row"><span>จำนวนบิลทั้งหมด:</span><strong id="dailyBillCount">0 บิล</strong></div>
+        <div class="summary-row"><span>ยอดขายรวม:</span><strong id="dailyTotalSales">0 ฿</strong></div>
+        <div class="summary-row" style="color:#166534;"><span>✅ ได้รับเงินแล้ว:</span><strong id="dailyPaidSales">0 ฿</strong></div>
+        <div class="summary-row" style="color:#b91c1c;"><span>⏳ รอชำระ:</span><strong id="dailyDueSales">0 ฿</strong></div>
+      </div>
+
+      <button class="btn-act btn-sheet" onclick="exportHistoryCSV()" style="margin-bottom:10px;">📊 ดาวน์โหลดรายงาน Excel/CSV ของวันนี้</button>
+
+      <div style="font-weight:bold; font-size:13px; color:#334155; margin-bottom:6px;">📑 รายการบิลในวันนี้:</div>
+      <div id="historyListContainer"></div>
+    </div>
+
+  </div>
+
+  <!-- Modal หน้าต่างจำลองสลิป -->
+  <div id="previewModal" class="modal-overlay">
+    <div class="receipt-paper">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong id="modalTitle" style="font-size:15px; color:#b91c1c;">ตัวอย่างสลิป</strong>
+        <span style="font-size:11px; color:#666;">(ไม่ต้องต่อบลูทูธ)</span>
+      </div>
+      <div id="previewText" class="receipt-content"></div>
+      
+      <div id="modalQrBox" class="qr-container" style="display:none;">
+        <div style="font-size:13px; font-weight:bold; color:#166534;">สแกนจ่าย: ครัวออยออย</div>
+        <div style="font-size:11px; color:#64748b; margin-bottom:4px;">บัญชี: น.ส. ทัศนีย์ เม่นทอง (K SHOP)</div>
+        <div id="qrcode"></div>
+        <button class="btn-save-qr" onclick="saveQrToGallery()">💾 บันทึกรูป QR ลงเครื่อง (ไว้ส่งใน LINE)</button>
+      </div>
+
+      <div class="modal-btns">
+        <button class="btn-act btn-gray" style="margin-top:4px;" onclick="closePreview()">ปิดหน้าต่าง</button>
+        <button id="modalPrintBtn" class="btn-act btn-green" style="margin-top:4px;">🖨️ สั่งพิมพ์</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SHOP_PROMPTPAY_PAYLOAD = "00020101021130630016A000000677010111011300660000000000215EMPKB00000196578300153037645802TH5912Krua Oil Oil62070703***6304";
+
+    const recList = [
+      { name: "กะเพราหมูกรอบ", p: 65 }, { name: "กะเพราหมูสับ", p: 50 },
+      { name: "กะเพราหมูชิ้น", p: 50 }, { name: "กะเพราไก่", p: 50 },
+      { name: "กะเพรากุ้ง", p: 65 }, { name: "กะเพราหมึก", p: 65 },
+      { name: "กะเพราทะเล", p: 65 }, { name: "กะเพราเนื้อ", p: 60 },
+      { name: "หมูกรอบคั่วพริกเกลือ", p: 65 }, { name: "ผัดผงกะหรี่กุ้ง", p: 65 },
+      { name: "ผัดผงกะหรี่ทะเล", p: 65 }, { name: "ผัดผงกะหรี่ หมู/ไก่", p: 55 },
+      { name: "ข้าวผัดหมู", p: 50 }, { name: "ข้าวผัดกุ้ง", p: 65 },
+      { name: "ข้าวผัดหมูกรอบ", p: 65 }, { name: "ผัดแตงกวาใส่ไข่", p: 50 },
+      { name: "ผัดบวบหมูสับใส่ไข่", p: 50 }, { name: "สุกี้ (น้ำ/แห้ง)", p: 55 },
+      { name: "ต้มยำ (รวมข้าว)", p: 60 }
+    ];
+
+    let selectedCookingType = "ผัดกะเพรา";
+    let billItems = [];
+    let printCharacteristic = null;
+
+    function initMeta() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+
+      document.getElementById('billDate').value = `${y}-${m}-${d}`;
+      document.getElementById('filterHistoryDate').value = `${y}-${m}-${d}`;
+      document.getElementById('billOrderTime').value = `${hh}:${mm}`;
+      
+      const billCount = localStorage.getItem('oil_bill_seq') || '01';
+      document.getElementById('billNo').value = `${y.toString().slice(-2)}${m}${d}-${billCount}`;
+    }
+    window.onload = initMeta;
+
+    function switchMainPage(page) {
+      if (page === 'pos') {
+        document.getElementById('pagePos').style.display = 'block';
+        document.getElementById('pageHistory').style.display = 'none';
+        document.getElementById('navMainBtn').classList.add('active');
+        document.getElementById('navHistBtn').classList.remove('active');
+      } else {
+        document.getElementById('pagePos').style.display = 'none';
+        document.getElementById('pageHistory').style.display = 'block';
+        document.getElementById('navMainBtn').classList.remove('active');
+        document.getElementById('navHistBtn').classList.add('active');
+        renderHistory();
+      }
+    }
+
+    function setTab(tab) {
+      document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tabFast').style.display = tab === 'fast' ? 'block' : 'none';
+      document.getElementById('tabRec').style.display = tab === 'rec' ? 'block' : 'none';
+      document.getElementById('tabEtc').style.display = tab === 'etc' ? 'block' : 'none';
+    }
+
+    const recContainer = document.getElementById('recMenuContainer');
+    recList.forEach(m => {
+      const el = document.createElement('div');
+      el.className = 'btn-card';
+      el.onclick = () => addDirect(m.name, m.p);
+      el.innerHTML = `<span class="name">${m.name}</span><span class="price">${m.p}.-</span>`;
+      recContainer.appendChild(el);
+    });
+
+    function selectCooking(type, btn) {
+      selectedCookingType = type;
+      document.querySelectorAll('#tabFast .chip-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function addCustomFast(meat, price) {
+      addDirect(`${selectedCookingType}${meat}`, price);
+    }
+
+    function addDirect(name, price, person = "", note = "", egg = "none", extraEggPrice = 10, qty = 1, customSpecialText = "", customSpecialPrice = 0) {
+      billItems.push({
+        id: Date.now() + Math.random(),
+        name: name,
+        price: price,            // ราคาตั้งต้น (สามารถแก้ไขตัวเลขได้)
+        dishPrice: 80,
+        qty: qty,
+        eggOption: egg,
+        extraEggPrice: extraEggPrice,
+        isDishOnly: false,
+        special: false,
+        customSpecialText: customSpecialText, // ข้อความพิเศษอื่นๆ ที่กรอกเอง
+        customSpecialPrice: customSpecialPrice, // ราคาพิเศษอื่นๆ ที่กรอกเอง
+        personName: person,
+        note: note,
+        isPaid: false
+      });
+      renderBill();
+    }
+
+    async function printRawLineText() {
+      if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
+      const text = document.getElementById('lineRawText').value.trim();
+      if (!text) return alert("กรุณาวางข้อความจาก LINE ก่อนพิมพ์ครับ");
+
+      const encoder = new TextEncoder();
+      const init = [0x1B, 0x40];
+      const boldOn = [0x1B, 0x45, 0x01];
+      const boldOff = [0x1B, 0x45, 0x00];
+      const doubleSize = [0x1D, 0x21, 0x11];
+      const normalSize = [0x1D, 0x21, 0x00];
+
+      let printData = [...init, ...boldOn, ...doubleSize];
+      printData.push(...encoder.encode("[ ออเดอร์จาก LINE ]\n"));
+      printData.push(...normalSize, ...boldOff);
+      printData.push(...encoder.encode("================================\n"));
+      printData.push(...encoder.encode(text + "\n"));
+      printData.push(...encoder.encode("================================\n\n\n"));
+
+      sendChunks(printData);
+      alert("🖨️ ส่งข้อความออกเครื่องพิมพ์เรียบร้อย!");
+    }
+
+    function parseLineOrders() {
+      const text = document.getElementById('lineRawText').value.trim();
+      if (!text) return alert("กรุณาวางข้อความก่อนครับ");
+
+      const lines = text.split('\n');
+      lines.forEach(line => {
+        line = line.trim();
+        if (!line) return;
+
+        let egg = "none";
+        let note = "";
+        let dishPrice = 50;
+
+        if (line.includes("ไข่ดาว 2")) { egg = "เพิ่มไข่ดาว"; line = line.replace(/ไข่ดาว\s*2\s*ฟอง|ไข่ดาว\s*2/g, ""); }
+        else if (line.includes("เพิ่มไข่ดาว")) { egg = "เพิ่มไข่ดาว"; line = line.replace(/\+?\s*เพิ่มไข่ดาว/g, ""); }
+        else if (line.includes("เพิ่มไข่เจียว") || line.includes("ไข่เจียว 2")) { egg = "เพิ่มไข่เจียว"; line = line.replace(/ไข่เจียว\s*2\s*ฟอง|ไข่เจียว\s*2|\+?\s*เพิ่มไข่เจียว/g, ""); }
+        else if (line.includes("เพิ่มไข่ข้น") || line.includes("ไข่ข้น")) { egg = "เพิ่มไข่ข้น"; line = line.replace(/\+?\s*เพิ่มไข่ข้น|\+?\s*ไข่ข้น/g, ""); }
+        else if (line.includes("ไข่ดาว")) { egg = "ไข่ดาว"; line = line.replace(/\+?\s*ไข่ดาว/g, ""); }
+        else if (line.includes("ไข่เจียว")) { egg = "ไข่เจียว"; line = line.replace(/\+?\s*ไข่เจียว/g, ""); }
+
+        if (line.includes("เผ็ดๆ")) { note += "เผ็ดๆ "; line = line.replace(/เผ็ดๆ/g, ""); }
+        if (line.includes("เผ็ดน้อย")) { note += "เผ็ดน้อย "; line = line.replace(/เผ็ดน้อย/g, ""); }
+        if (line.includes("ไม่เผ็ด")) { note += "ไม่เผ็ด "; line = line.replace(/ไม่เผ็ด/g, ""); }
+
+        line = line.replace(/\s+/g, " ").trim();
+
+        const matchWithQty = line.match(/^(.+?)\s+(\d+)\s*(.*)$/);
+        let menuName = "";
+        let qty = 1;
+        let personsRaw = "";
+
+        if (matchWithQty) {
+          menuName = matchWithQty[1].trim();
+          qty = parseInt(matchWithQty[2]) || 1;
+          personsRaw = matchWithQty[3].trim();
+        } else {
+          const parts = line.split(" ");
+          if (parts.length > 2) {
+            menuName = parts[0];
+            personsRaw = parts.slice(1).join(" ");
+          } else if (parts.length === 2) {
+            menuName = parts[0];
+            personsRaw = parts[1];
+          } else {
+            menuName = line;
+          }
+        }
+
+        if (menuName.includes("หมูกรอบ") || menuName.includes("ทะเล") || menuName.includes("กุ้ง") || menuName.includes("หมึก")) {
+          dishPrice = 65;
+        } else if (menuName.includes("เนื้อ")) {
+          dishPrice = 60;
+        } else if (menuName.includes("ตับ")) {
+          dishPrice = 55;
+        } else {
+          dishPrice = 50;
+        }
+
+        let nameList = [];
+        if (personsRaw) {
+          nameList = personsRaw.split(/[\s,/]+/).filter(n => n.trim().length > 0);
+        }
+
+        if (nameList.length > 1) {
+          nameList.forEach(pName => {
+            addDirect(menuName, dishPrice, pName, note.trim(), "none", 10, 1);
+          });
+        } else {
+          addDirect(menuName, dishPrice, nameList.length === 1 ? nameList[0] : "", note.trim(), "none", 10, qty);
+        }
+      });
+
+      document.getElementById('lineRawText').value = "";
+    }
+
+    function togglePaid(idx) {
+      billItems[idx].isPaid = !billItems[idx].isPaid;
+      renderBill();
+    }
+
+    function deleteItem(idx) { billItems.splice(idx, 1); renderBill(); }
+    function updateItemName(idx, val) { billItems[idx].name = val; }
+    
+    // ฟังก์ชันแก้ไขราคาต่อหน่วยโดยตรง
+    function updateUnitPriceDirect(idx, val) {
+      const p = parseFloat(val);
+      billItems[idx].price = isNaN(p) ? 0 : p;
+      updateTotals();
+    }
+
+    function setEgg(idx, option) { billItems[idx].eggOption = billItems[idx].eggOption === option ? 'none' : option; renderBill(); }
+    function updateExtraEggPrice(idx, val) { const p = parseFloat(val); billItems[idx].extraEggPrice = isNaN(p) ? 10 : p; updateTotals(); }
+    function toggleDishOnly(idx) { billItems[idx].isDishOnly = !billItems[idx].isDishOnly; renderBill(); }
+    function updateDishPrice(idx, val) { billItems[idx].dishPrice = parseFloat(val) || 0; updateTotals(); }
+    function toggleSpecial(idx) { billItems[idx].special = !billItems[idx].special; renderBill(); }
+    
+    // อัปเดตข้อมูลพิเศษอื่นๆ
+    function toggleCustomSpecial(idx) {
+      billItems[idx].showCustomSpecial = !billItems[idx].showCustomSpecial;
+      renderBill();
+    }
+    function updateCustomSpecialText(idx, val) { billItems[idx].customSpecialText = val; }
+    function updateCustomSpecialPrice(idx, val) {
+      const p = parseFloat(val);
+      billItems[idx].customSpecialPrice = isNaN(p) ? 0 : p;
+      updateTotals();
+    }
+
+    function changeQty(idx, delta) { billItems[idx].qty += delta; if (billItems[idx].qty <= 0) billItems.splice(idx, 1); renderBill(); }
+    function updatePerson(idx, val) { billItems[idx].personName = val; }
+    function updateNote(idx, val) { billItems[idx].note = val; }
+
+    function getItemUnitPrice(item) {
+      let base = item.isDishOnly ? item.dishPrice : item.price;
+      if (item.special) base += 10;
+      if (['เพิ่มไข่ดาว', 'เพิ่มไข่เจียว', 'เพิ่มไข่ข้น'].includes(item.eggOption)) {
+        base += (typeof item.extraEggPrice === 'number' ? item.extraEggPrice : 10);
+      }
+      if (item.customSpecialPrice) {
+        base += parseFloat(item.customSpecialPrice) || 0;
+      }
+      return base;
+    }
+
+    function updateTotals() {
+      let total = 0;
+      let paid = 0;
+      billItems.forEach((item, idx) => {
+        const p = getItemUnitPrice(item);
+        const lineTotal = p * item.qty;
+        total += lineTotal;
+        if (item.isPaid) paid += lineTotal;
+
+        const lEl = document.getElementById(`lineTotal-${idx}`);
+        if (lEl) lEl.innerText = `${lineTotal} ฿`;
+      });
+
+      const due = total - paid;
+      document.getElementById('sumTotal').innerText = `${total} ฿`;
+      document.getElementById('sumPaid').innerText = `${paid} ฿`;
+      document.getElementById('sumDue').innerText = `${due} ฿`;
+    }
+
+    function saveBillToHistory() {
+      if (billItems.length === 0) return;
+      const bNo = document.getElementById('billNo').value.trim();
+      const bDate = document.getElementById('billDate').value;
+      const bOrderTime = document.getElementById('billOrderTime').value.trim();
+      const bCust = document.getElementById('billCustName').value.trim();
+      const bPlace = document.getElementById('billDelivery').value.trim();
+      const bDelivTime = document.getElementById('billDeliveryTime').value.trim();
+
+      let total = 0;
+      let paid = 0;
+      billItems.forEach(i => {
+        const amt = getItemUnitPrice(i) * i.qty;
+        total += amt;
+        if (i.isPaid) paid += amt;
+      });
+
+      const billRecord = {
+        billNo: bNo, date: bDate, orderTime: bOrderTime, custName: bCust,
+        deliveryPlace: bPlace, deliveryTime: bDelivTime,
+        items: JSON.parse(JSON.stringify(billItems)),
+        total: total, paid: paid, due: total - paid, savedAt: new Date().toISOString()
+      };
+
+      let history = JSON.parse(localStorage.getItem('oil_bills_history') || '[]');
+      const existIdx = history.findIndex(h => h.billNo === bNo && h.date === bDate);
+      if (existIdx >= 0) { history[existIdx] = billRecord; }
+      else { history.unshift(billRecord); }
+      localStorage.setItem('oil_bills_history', JSON.stringify(history));
+    }
+
+    function saveAndClearBill() {
+      if (billItems.length > 0) { saveBillToHistory(); }
+      billItems = [];
+      document.getElementById('billCustName').value = "";
+      document.getElementById('billDelivery').value = "";
+      document.getElementById('billDeliveryTime').value = "";
+      let seq = parseInt(localStorage.getItem('oil_bill_seq') || '1') + 1;
+      localStorage.setItem('oil_bill_seq', String(seq).padStart(2, '0'));
+      initMeta();
+      renderBill();
+      alert("💾 บันทึกบิลลงประวัติ และเริ่มบิลใหม่เรียบร้อย!");
+    }
+
+    function renderBill() {
+      const container = document.getElementById('billContainer');
+      if (billItems.length === 0) {
+        container.innerHTML = '<span style="color:#94a3b8; font-size:12px;">ยังไม่มีรายการ</span>';
+        updateTotals();
+        return;
+      }
+
+      let html = "";
+      billItems.forEach((item, idx) => {
+        const unitPrice = getItemUnitPrice(item);
+        const lineTotal = unitPrice * item.qty;
+        const isExtraEgg = ['เพิ่มไข่ดาว', 'เพิ่มไข่เจียว', 'เพิ่มไข่ข้น'].includes(item.eggOption);
+
+        html += `
+          <div class="bill-item ${item.isPaid ? 'is-paid' : ''}">
+            <div class="bill-item-header">
+              <span class="order-no">#${idx + 1}</span>
+              <input type="text" class="item-name-input" value="${item.name}" onchange="updateItemName(${idx}, this.value)">
+              <span id="lineTotal-${idx}" style="margin: 0 6px; font-weight:bold;">${lineTotal} ฿</span>
+              
+              <button class="btn-pay-toggle ${item.isPaid ? 'paid' : 'unpaid'}" onclick="togglePaid(${idx})">
+                ${item.isPaid ? '✅ จ่ายแล้ว' : 'ยังไม่ได้รับยอด'}
+              </button>
+              <button class="btn-delete" onclick="deleteItem(${idx})">🗑️</button>
+            </div>
+
+            <!-- แก้ไขราคาต่อหน่วยได้ -->
+            <div style="display:flex; align-items:center; gap:6px; margin:4px 0; font-size:12px; color:#475569;">
+              <span>ราคาต่อหน่วย:</span>
+              <input type="number" class="unit-price-edit" value="${item.price}" oninput="updateUnitPriceDirect(${idx}, this.value)"> บ.
+            </div>
+
+            <div class="pill-group">
+              <span class="pill ${item.eggOption === 'ไข่ดาว' ? 'active' : ''}" onclick="setEgg(${idx}, 'ไข่ดาว')">+ ไข่ดาว</span>
+              <span class="pill ${item.eggOption === 'ไข่เจียว' ? 'active' : ''}" onclick="setEgg(${idx}, 'ไข่เจียว')">+ ไข่เจียว</span>
+              <span class="pill ${item.eggOption === 'เพิ่มไข่ดาว' ? 'active' : ''}" onclick="setEgg(${idx}, 'เพิ่มไข่ดาว')">+ เพิ่มไข่ดาว</span>
+              <span class="pill ${item.eggOption === 'เพิ่มไข่เจียว' ? 'active' : ''}" onclick="setEgg(${idx}, 'เพิ่มไข่เจียว')">+ เพิ่มไข่เจียว</span>
+              <span class="pill ${item.eggOption === 'เพิ่มไข่ข้น' ? 'active' : ''}" onclick="setEgg(${idx}, 'เพิ่มไข่ข้น')">+ เพิ่มไข่ข้น</span>
+              ${isExtraEgg ? `
+                <input type="number" class="price-input" value="${item.extraEggPrice !== undefined ? item.extraEggPrice : 10}" 
+                       oninput="updateExtraEggPrice(${idx}, this.value)">
+                <span style="font-size:10px; color:#666;">บ.</span>
+              ` : ''}
+            </div>
+
+            <div class="pill-group">
+              <span class="pill ${item.isDishOnly ? 'active-opt' : ''}" onclick="toggleDishOnly(${idx})">🍲 กับข้าว</span>
+              ${item.isDishOnly ? `
+                <input type="number" class="price-input" value="${item.dishPrice}" oninput="updateDishPrice(${idx}, this.value)">
+                <span style="font-size:10px; color:#666;">บ.</span>
+              ` : ''}
+              <span class="pill ${item.special ? 'active-opt' : ''}" onclick="toggleSpecial(${idx})">+ พิเศษ (+10)</span>
+              <span class="pill ${item.showCustomSpecial ? 'active-opt' : ''}" onclick="toggleCustomSpecial(${idx})">+ พิเศษอื่นๆ</span>
+            </div>
+
+            <!-- ช่องกรอกข้อความและราคาพิเศษอื่นๆ ที่กำหนดเองได้ -->
+            ${item.showCustomSpecial ? `
+              <div class="custom-special-box">
+                <input type="text" class="custom-special-name" placeholder="ระบุพิเศษ (เช่น เพิ่มหมู, น้ำจิ้มซีฟู้ด)" 
+                       value="${item.customSpecialText || ''}" oninput="updateCustomSpecialText(${idx}, this.value)">
+                <input type="number" class="custom-special-price" placeholder="ราคา" 
+                       value="${item.customSpecialPrice || ''}" oninput="updateCustomSpecialPrice(${idx}, this.value)">
+                <span style="font-size:11px; color:#666;">บ.</span>
+              </div>
+            ` : ''}
+
+            <div class="row-inputs">
+              <input type="text" class="sub-input" placeholder="ชื่อคน (เช่น มุ้ย, วิท)" value="${item.personName}" oninput="updatePerson(${idx}, this.value)">
+              <input type="text" class="sub-input" placeholder="หมายเหตุ (เช่น เผ็ดๆ)" value="${item.note}" oninput="updateNote(${idx}, this.value)">
+            </div>
+
+            <div class="bill-actions">
+              <span style="font-size:11px; color:#64748b;">จำนวนจาน:</span>
+              <div class="qty-ctrl">
+                <button class="qty-b" onclick="changeQty(${idx}, -1)">-</button>
+                <span style="font-size:12px; font-weight:bold; min-width:16px; text-align:center;">${item.qty}</span>
+                <button class="qty-b" onclick="changeQty(${idx}, 1)">+</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      updateTotals();
+    }
+
+    function getFormattedDate() {
+      const dVal = document.getElementById('billDate').value;
+      if (!dVal) return "";
+      const [y, m, d] = dVal.split("-");
+      return `${d}/${m}/${y}`;
+    }
+
+    function buildReceiptText() {
+      const bNo = document.getElementById('billNo').value.trim();
+      const bDate = getFormattedDate();
+      const bOrderTime = document.getElementById('billOrderTime').value.trim();
+      const bCust = document.getElementById('billCustName').value.trim();
+      const bPlace = document.getElementById('billDelivery').value.trim();
+      const bDelivTime = document.getElementById('billDeliveryTime').value.trim();
+      
+      let total = 0;
+      let paid = 0;
+      billItems.forEach(i => {
+        const amt = getItemUnitPrice(i) * i.qty;
+        total += amt;
+        if (i.isPaid) paid += amt;
+      });
+
+      let t = "🧾 บิลรายการอาหาร ครัวออยออย\n";
+      let line1 = "";
+      if (bNo) line1 += `เลขที่บิล: ${bNo}`;
+      if (bDate) line1 += `   วันที่: ${bDate}`;
+      if (line1) t += `${line1}\n`;
+
+      if (bOrderTime) t += `เวลาที่รับออเดอร์: ${bOrderTime} น.\n`;
+      if (bCust) t += `ชื่อลูกค้า: ${bCust}\n`;
+      if (bPlace) t += `สถานที่ส่ง: ${bPlace}\n`;
+      if (bDelivTime) t += `เวลาที่ให้จัดส่ง: ${bDelivTime}\n`;
+      t += "--------------------------------\n";
+
+      billItems.forEach((item, idx) => {
+        const unitPrice = getItemUnitPrice(item);
+        const lineTotal = unitPrice * item.qty;
+        
+        let tags = [];
+        if (item.isDishOnly) tags.push(`กับข้าว ${item.dishPrice}บ.`);
+        if (item.special) tags.push("พิเศษ");
+        if (item.customSpecialText && item.customSpecialPrice) {
+          tags.push(`${item.customSpecialText} +${item.customSpecialPrice}บ.`);
+        } else if (item.customSpecialText) {
+          tags.push(item.customSpecialText);
+        }
+        const tagStr = tags.length > 0 ? ` (${tags.join(', ')})` : '';
+
+        t += `#${idx + 1} ${item.name}${tagStr} x${item.qty} = ${lineTotal} บ.\n`;
+        
+        let details = [];
+        if (item.personName.trim()) details.push(item.personName.trim());
+        if (item.eggOption !== 'none') details.push(item.eggOption);
+        if (item.note.trim()) details.push(item.note.trim());
+        if (details.length > 0) t += `   └ (${details.join(', ')})\n`;
+      });
+
+      t += "--------------------------------\n";
+      t += `ยอดรวมทั้งหมด: ${total} บาท\n`;
+      if (paid > 0) {
+        t += `✅ ได้รับเงินแล้ว: ${paid} บาท\n`;
+        t += `ยอดคงเหลือ: ${total - paid} บาท\n`;
+      }
+      t += "--------------------------------\n";
+      t += "บัญชี: น.ส. ทัศนีย์ เม่นทอง (K SHOP)\n";
+      t += "[ สแกน QR Code เพื่อชำระเงิน ]\n";
+      t += "ขอบคุณที่อุดหนุนครัวออยออย ครับ 🙏\n";
+      return t;
+    }
+
+    function buildKitchenText() {
+      const bNo = document.getElementById('billNo').value.trim();
+      const bDate = getFormattedDate();
+      const bOrderTime = document.getElementById('billOrderTime').value.trim();
+      const bCust = document.getElementById('billCustName').value.trim();
+      const bPlace = document.getElementById('billDelivery').value.trim();
+      const bDelivTime = document.getElementById('billDeliveryTime').value.trim();
+      
+      let t = "================================\n       [ ใบสั่งเข้าครัว ]       \n";
+      let line1 = "";
+      if (bNo) line1 += `บิล: ${bNo}`;
+      if (bDate) line1 += ` | วันที่: ${bDate}`;
+      if (line1) t += `${line1}\n`;
+
+      let line2 = [];
+      if (bOrderTime) line2.push(`รับออเดอร์: ${bOrderTime} น.`);
+      if (bDelivTime) line2.push(`ส่ง: ${bDelivTime}`);
+      if (line2.length > 0) t += `${line2.join(' | ')}\n`;
+
+      if (bCust) t += `ลูกค้า: ${bCust}\n`;
+      if (bPlace) t += `สถานที่ส่ง: ${bPlace}\n`;
+      t += "================================\n\n";
+
+      billItems.forEach((item, idx) => {
+        let tagStr = "";
+        if (item.isDishOnly) tagStr += " [กับข้าว]";
+        if (item.special) tagStr += " [พิเศษ]";
+        if (item.customSpecialText) tagStr += ` [${item.customSpecialText}]`;
+
+        t += `#${idx + 1} ${item.name}${tagStr}  [x${item.qty}]\n`;
+        let details = [];
+        if (item.personName.trim()) details.push(item.personName.trim());
+        if (item.eggOption !== 'none') details.push(item.eggOption);
+        if (item.note.trim()) details.push(item.note.trim());
+        
+        if (details.length > 0) {
+          t += `   >> ${details.join(' | ')}\n`;
+        }
+        t += "\n";
+      });
+
+      const totalDishes = billItems.reduce((sum, item) => sum + item.qty, 0);
+      t += `================================\n        รวมทั้งหมด: ${totalDishes} รายการ\n================================\n`;
+      return t;
+    }
+
+    function openReceiptPreview() {
+      if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนครับ");
+      document.getElementById('modalTitle').innerText = "ตัวอย่างบิล & QR Code ชำระเงิน";
+      const box = document.getElementById('previewText');
+      box.className = "receipt-content";
+      box.innerText = buildReceiptText();
+      
+      const qrBox = document.getElementById('modalQrBox');
+      qrBox.style.display = 'block';
+
+      const qrTarget = document.getElementById('qrcode');
+      qrTarget.innerHTML = "";
+      new QRCode(qrTarget, {
+        text: SHOP_PROMPTPAY_PAYLOAD,
+        width: 150,
+        height: 150,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.M
+      });
+
+      const pBtn = document.getElementById('modalPrintBtn');
+      pBtn.onclick = () => { closePreview(); printReceipt(); };
+      document.getElementById('previewModal').style.display = 'flex';
+    }
+
+    function saveQrToGallery() {
+      const img = document.querySelector('#qrcode img');
+      if (img && img.src) {
+        const a = document.createElement('a');
+        a.href = img.src;
+        a.download = 'QR_KruaOilOil.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        alert("💾 บันทึกภาพ QR Code ลงเครื่องแล้ว!");
+      }
+    }
+
+    function openKitchenPreview() {
+      if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนครับ");
+      document.getElementById('modalTitle').innerText = "ตัวอย่างใบสั่งเข้าครัว";
+      const box = document.getElementById('previewText');
+      box.className = "receipt-content kitchen-preview";
+      box.innerText = buildKitchenText();
+      document.getElementById('modalQrBox').style.display = 'none';
+
+      const pBtn = document.getElementById('modalPrintBtn');
+      pBtn.onclick = () => { closePreview(); printKitchenTicket(); };
+      document.getElementById('previewModal').style.display = 'flex';
+    }
+
+    function closePreview() {
+      document.getElementById('previewModal').style.display = 'none';
+    }
+
+    function copyUnpaidReminder() {
+      if (billItems.length === 0) return alert("ไม่มีรายการในบิลครับ");
+      const unpaids = billItems.filter(i => !i.isPaid);
+      if (unpaids.length === 0) return alert("ได้รับยอดครบทุกรายการเรียบร้อยแล้วครับ! 🎉");
+
+      const bNo = document.getElementById('billNo').value.trim();
+      const bDate = getFormattedDate();
+      const bCust = document.getElementById('billCustName').value.trim();
+      const bPlace = document.getElementById('billDelivery').value.trim();
+      const bDelivTime = document.getElementById('billDeliveryTime').value.trim();
+      
+      let totalBill = 0;
+      let paidTotal = 0;
+      billItems.forEach(i => {
+        const amt = getItemUnitPrice(i) * i.qty;
+        totalBill += amt;
+        if (i.isPaid) paidTotal += amt;
+      });
+      const dueTotal = totalBill - paidTotal;
+
+      let t = "📢 สรุปรายการออเดอร์ - ครัวออยออย\n";
+      let line1 = "";
+      if (bNo) line1 += `เลขที่บิล: ${bNo}`;
+      if (bDate) line1 += `   วันที่: ${bDate}`;
+      if (line1) t += `${line1}\n`;
+
+      if (bCust) t += `ลูกค้า: ${bCust}\n`;
+      if (bPlace) t += `ส่งที่: ${bPlace}\n`;
+      if (bDelivTime) t += `เวลาที่ให้จัดส่ง: ${bDelivTime}\n`;
+      t += `--------------------------------\n`;
+      t += `ยอดรวมทั้งบิล: ${totalBill} บาท\n✅ ได้รับแล้ว: ${paidTotal} บาท\nยอดคงเหลือ: ${dueTotal} บาท\n--------------------------------\nรายการที่รอชำระ:\n`;
+
+      unpaids.forEach((item, idx) => {
+        const unitPrice = getItemUnitPrice(item);
+        const lineTotal = unitPrice * item.qty;
+        const who = item.personName.trim() ? `${item.personName.trim()} : ` : "";
+        t += `${idx + 1}. ${who}${item.name} x${item.qty} = ${lineTotal} บ.\n`;
+      });
+
+      t += "--------------------------------\nบัญชี: น.ส. ทัศนีย์ เม่นทอง (K SHOP)\nสแกนจ่ายผ่าน QR Code พร้อมเพย์\nขอบคุณมากครับ 🙏";
+      navigator.clipboard.writeText(t).then(() => alert("📲 คัดลอกสรุปรายการเรียบร้อย!"));
+    }
+
+    function copyKitchenToLine() {
+      if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนครับ");
+      navigator.clipboard.writeText(buildKitchenText()).then(() => alert("📲 คัดลอกใบสั่งเข้าครัวเรียบร้อย!"));
+    }
+
+    function copyReceipt() {
+      if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนคัดลอก");
+      saveBillToHistory();
+      navigator.clipboard.writeText(buildReceiptText()).then(() => alert("คัดลอกบิลคิดเงินเรียบร้อย!"));
+    }
+
+    async function connectPrinter() {
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2', 0xFFE0]
+        });
+        const server = await device.gatt.connect();
+        const services = await server.getPrimaryServices();
+        for (const s of services) {
+          const chars = await s.getCharacteristics();
+          for (const c of chars) {
+            if (c.properties.write || c.properties.writeWithoutResponse) {
+              printCharacteristic = c;
+              break;
+            }
+          }
+          if (printCharacteristic) break;
+        }
+        document.getElementById('btStatus').innerText = "เชื่อมต่อแล้ว";
+        document.getElementById('btStatus').className = "status-badge connected";
+      } catch (e) {
+        alert("เชื่อมต่อไม่สำเร็จ: " + e.message);
+      }
+    }
+
+    async function printReceipt() {
+      if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
+      if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
+      saveBillToHistory();
+
+      const text = buildReceiptText();
+      const encoder = new TextEncoder();
+      const init = [0x1B, 0x40];
+      const alignCenter = [0x1B, 0x61, 0x01];
+      const alignLeft = [0x1B, 0x61, 0x00];
+
+      let printData = [...init, ...alignLeft, ...encoder.encode(text), ...alignCenter];
+
+      const qrPayloadBytes = encoder.encode(SHOP_PROMPTPAY_PAYLOAD);
+      const len = qrPayloadBytes.length + 3;
+      const pL = len % 256;
+      const pH = Math.floor(len / 256);
+
+      printData.push(0x1D, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00);
+      printData.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x06);
+      printData.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31);
+      printData.push(0x1D, 0x28, 0x6B, pL, pH, 0x31, 0x50, 0x30, ...qrPayloadBytes);
+      printData.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30);
+      printData.push(0x0A, 0x0A, 0x0A);
+
+      sendChunks(printData);
+    }
+
+    async function printKitchenTicket() {
+      if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
+      if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
+
+      const encoder = new TextEncoder();
+      const init = [0x1B, 0x40];
+      const doubleSize = [0x1D, 0x21, 0x11];
+      const normalSize = [0x1D, 0x21, 0x00];
+      const boldOn = [0x1B, 0x40, 0x1B, 0x45, 0x01];
+      const boldOff = [0x1B, 0x45, 0x00];
+
+      let printData = [...init];
+
+      printData.push(...boldOn, ...doubleSize);
+      printData.push(...encoder.encode("[ ใบสั่งเข้าครัว ]\n"));
+      printData.push(...normalSize, ...boldOff);
+      
+      const bNo = document.getElementById('billNo').value.trim();
+      const bDate = getFormattedDate();
+      const bOrderTime = document.getElementById('billOrderTime').value.trim();
+      const bCust = document.getElementById('billCustName').value.trim();
+      const bPlace = document.getElementById('billDelivery').value.trim();
+      const bDelivTime = document.getElementById('billDeliveryTime').value.trim();
+      
+      let headerStr = "";
+      if (bNo) headerStr += `บิล: ${bNo}`;
+      if (bDate) headerStr += ` | วันที่: ${bDate}`;
+      headerStr += "\n";
+      if (bOrderTime) headerStr += `รับ: ${bOrderTime} น. | `;
       if (bDelivTime) headerStr += `ส่ง: ${bDelivTime}\n`;
       else headerStr += "\n";
       if (bCust) headerStr += `ลูกค้า: ${bCust}\n`;
@@ -9,6 +1030,7 @@ rderTime} น. | `;
         let tagStr = "";
         if (item.isDishOnly) tagStr += " [กับข้าว]";
         if (item.special) tagStr += " [พิเศษ]";
+        if (item.customSpecialText) tagStr += ` [${item.customSpecialText}]`;
 
         printData.push(...boldOn, ...doubleSize);
         printData.push(...encoder.encode(`#${idx + 1} ${item.name}${tagStr} x${item.qty}\n`));
