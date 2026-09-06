@@ -3,49 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ครัวออยออย - พิมพ์ออเดอร์บลูทูธ</title>
+  <title>ครัวออยออย - พิมพ์ออเดอร์หน้าร้าน</title>
   <style>
-    body { font-family: sans-serif; padding: 16px; background-color: #f7f7f7; }
-    .card { background: white; padding: 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    button { width: 100%; padding: 12px; margin: 8px 0; font-size: 16px; border-radius: 6px; border: none; font-weight: bold; }
-    .btn-connect { background-color: #007bff; color: white; }
-    .btn-print { background-color: #28a745; color: white; }
-    textarea { width: 100%; height: 120px; box-sizing: border-box; padding: 8px; font-size: 16px; }
-    .status { margin-bottom: 12px; font-weight: bold; color: #555; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 12px; background-color: #f4f6f8; margin: 0; }
+    .card { background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; }
+    h2 { margin-top: 0; font-size: 20px; color: #333; text-align: center; }
+    
+    .status { padding: 8px; border-radius: 6px; background: #e9ecef; font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 12px; }
+    .status.connected { background: #d4edda; color: #155724; }
+
+    button { width: 100%; padding: 12px; font-size: 16px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+    .btn-connect { background-color: #0d6efd; color: white; margin-bottom: 12px; }
+    .btn-print { background-color: #198754; color: white; font-size: 18px; padding: 14px; margin-top: 12px; }
+    .btn-clear { background-color: #6c757d; color: white; padding: 8px; font-size: 13px; margin-top: 8px; }
+
+    /* ตะแกรงปุ่มลัดเมนู */
+    .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+    .btn-menu { background: #fff3cd; border: 1px solid #ffe69c; color: #664d03; padding: 12px 8px; font-size: 15px; border-radius: 8px; font-weight: 600; }
+    .btn-menu:active { background: #ffe69c; transform: scale(0.98); }
+    .btn-topping { background: #e2e3e5; border: 1px solid #d3d6d8; color: #383d41; }
+
+    /* รายการออเดอร์ปัจจุบัน */
+    .order-list { border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; padding: 10px 0; margin: 12px 0; }
+    .order-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 15px; }
+    .item-controls { display: flex; align-items: center; gap: 8px; }
+    .qty-btn { width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid #ccc; background: #fff; font-size: 16px; }
+
+    textarea { width: 100%; height: 60px; padding: 8px; font-size: 14px; border-radius: 6px; border: 1px solid #ced4da; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>ครัวออยออย (เครื่องพิมพ์บลูทูธ)</h2>
-    <div id="status" class="status">สถานะ: ยังไม่ได้เชื่อมต่อ</div>
-    
-    <button class="btn-connect" onclick="connectPrinter()">1. เชื่อมต่อเครื่องพิมพ์บลูทูธ</button>
+    <h2>🍳 ครัวออยออย</h2>
+    <div id="status" class="status">สถานะ: ยังไม่ได้เชื่อมต่อเครื่องพิมพ์</div>
+    <button class="btn-connect" onclick="connectPrinter()">🔌 เชื่อมต่อเครื่องพิมพ์บลูทูธ</button>
 
-    <p>วางข้อความออเดอร์จาก LINE ที่นี่:</p>
-    <textarea id="orderText" placeholder="ตัวอย่าง:&#10;กะเพราหมูกรอบ 2&#10;คะน้าหมูกรอบ 1 พิเศษ"></textarea>
+    <div style="font-weight: bold; margin-bottom: 6px; color: #444;">เมนูยอดนิยม (กดเพิ่มรายการ):</div>
+    <div class="menu-grid">
+      <button class="btn-menu" onclick="addItem('กะเพราหมูกรอบ')">กะเพราหมูกรอบ</button>
+      <button class="btn-menu" onclick="addItem('คะน้าหมูกรอบ')">คะน้าหมูกรอบ</button>
+      <button class="btn-menu" onclick="addItem('กะเพราหมูสับ')">กะเพราหมูสับ</button>
+      <button class="btn-menu" onclick="addItem('ผัดผงกะหรี่')">ผัดผงกะหรี่</button>
+      <button class="btn-menu" onclick="addItem('ข้าวผัด')">ข้าวผัด</button>
+      <button class="btn-menu btn-topping" onclick="addItem('ไข่ดาว')">+ ไข่ดาว</button>
+    </div>
 
-    <button class="btn-print" onclick="printReceipt()">2. พิมพ์ใบเสร็จ</button>
+    <div class="order-list">
+      <div style="font-weight: bold; margin-bottom: 6px; color: #333;">รายการที่เลือก:</div>
+      <div id="selectedItems">ยังไม่มีรายการ</div>
+    </div>
+
+    <label style="font-size: 13px; color: #666; font-weight: bold;">หมายเหตุ / ออเดอร์พิเศษเพิ่มเติม:</label>
+    <textarea id="extraNotes" placeholder="เช่น ไม่ใส่พริก, หวานน้อย, ข้อความจาก LINE..."></textarea>
+
+    <button class="btn-clear" onclick="clearAllOrders()">ล้างรายการทั้งหมด</button>
+    <button class="btn-print" onclick="printReceipt()">🖨️ พิมพ์ใบเสร็จ</button>
   </div>
 
   <script>
     let printCharacteristic = null;
+    let currentOrders = {}; // เก็บ { "ชื่อเมนู": จำนวน }
 
-    // 1. ค้นหาและเชื่อมต่อเครื่องพิมพ์บลูทูธ
+    // 1. เชื่อมต่อเครื่องพิมพ์
     async function connectPrinter() {
       try {
-        document.getElementById("status").innerText = "สถานะ: กำลังค้นหาเครื่องพิมพ์...";
+        const statusEl = document.getElementById("status");
+        statusEl.innerText = "กำลังค้นหาเครื่องพิมพ์...";
         
-        // ค้นหาอุปกรณ์บลูทูธ (Serial Port Profile)
         const device = await navigator.bluetooth.requestDevice({
           acceptAllDevices: true,
-          optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2', 0xFFE0]
+          optionalServices: [
+            '000018f0-0000-1000-8000-00805f9b34fb',
+            'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+            0xFFE0
+          ]
         });
 
         const server = await device.gatt.connect();
-        
-        // ดึง Service และ Characteristic สำหรับส่งคำสั่งพิมพ์
         const services = await server.getPrimaryServices();
+        
         for (const service of services) {
           const characteristics = await service.getCharacteristics();
           for (const char of characteristics) {
@@ -58,54 +96,121 @@
         }
 
         if (printCharacteristic) {
-          document.getElementById("status").innerText = `สถานะ: เชื่อมต่อสำเร็จ (${device.name})`;
-        } else {
-          document.getElementById("status").innerText = "สถานะ: ไม่พบลักษณะการส่งข้อมูลพิมพ์";
+          statusEl.innerText = `เชื่อมต่อแล้ว: ${device.name || "เครื่องพิมพ์บลูทูธ"}`;
+          statusEl.className = "status connected";
         }
       } catch (error) {
         document.getElementById("status").innerText = `ข้อผิดพลาด: ${error.message}`;
       }
     }
 
-    // 2. จัดรูปแบบและส่งข้อมูลไปยังเครื่องพิมพ์
+    // 2. จัดการรายการอาหาร
+    function addItem(name) {
+      if (currentOrders[name]) {
+        currentOrders[name] += 1;
+      } else {
+        currentOrders[name] = 1;
+      }
+      renderOrderList();
+    }
+
+    function changeQty(name, delta) {
+      if (!currentOrders[name]) return;
+      currentOrders[name] += delta;
+      if (currentOrders[name] <= 0) {
+        delete currentOrders[name];
+      }
+      renderOrderList();
+    }
+
+    function clearAllOrders() {
+      currentOrders = {};
+      document.getElementById("extraNotes").value = "";
+      renderOrderList();
+    }
+
+    function renderOrderList() {
+      const container = document.getElementById("selectedItems");
+      const keys = Object.keys(currentOrders);
+      
+      if (keys.length === 0) {
+        container.innerHTML = '<span style="color:#888;">ยังไม่มีรายการ</span>';
+        return;
+      }
+
+      let html = "";
+      keys.forEach(item => {
+        html += `
+          <div class="order-item">
+            <span>${item}</span>
+            <div class="item-controls">
+              <button class="qty-btn" onclick="changeQty('${item}', -1)">-</button>
+              <strong style="min-width: 20px; text-align: center;">${currentOrders[item]}</strong>
+              <button class="qty-btn" onclick="changeQty('${item}', 1)">+</button>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // 3. ส่งข้อมูลออกเครื่องพิมพ์
     async function printReceipt() {
       if (!printCharacteristic) {
-        alert("กรุณากดเชื่อมต่อเครื่องพิมพ์ก่อนครับ");
+        alert("กรุณากดเชื่อมต่อเครื่องพิมพ์บลูทูธก่อนครับ");
         return;
       }
 
-      const text = document.getElementById("orderText").value.trim();
-      if (!text) {
-        alert("กรุณากรอกข้อความออเดอร์");
+      const keys = Object.keys(currentOrders);
+      const extraNotes = document.getElementById("extraNotes").value.trim();
+
+      if (keys.length === 0 && !extraNotes) {
+        alert("กรุณาเลือกเมนูหรือระบุข้อความออเดอร์");
         return;
       }
 
-      // คำสั่ง ESC/POS เบื้องต้น
-      const initPrinter = [0x1B, 0x40]; // Initialize
+      // ดึงเวลาปัจจุบัน
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+      // รวบรวมบรรทัดที่จะพิมพ์
+      let receiptText = "";
+      receiptText += "--------------------------------\n";
+      receiptText += `เวลา: ${timeStr}\n`;
+      receiptText += "--------------------------------\n";
+
+      keys.forEach(item => {
+        receiptText += `${item}  x${currentOrders[item]}\n`;
+      });
+
+      if (extraNotes) {
+        receiptText += `\nหมายเหตุเพิ่มเติม:\n${extraNotes}\n`;
+      }
+
+      receiptText += "--------------------------------\n\n\n";
+
+      // ส่งคำสั่ง ESC/POS
+      const encoder = new TextEncoder();
+      const initPrinter = [0x1B, 0x40];
       const alignCenter = [0x1B, 0x61, 0x01];
       const alignLeft = [0x1B, 0x61, 0x00];
-      const lineFeed = [0x0A, 0x0A, 0x0A]; // เลื่อนกระดาษ 3 บรรทัด
 
-      // แปลงข้อความเป็นรหัส TIS-620 หรือ UTF-8 ตามที่เครื่องพิมพ์รองรับ
-      const encoder = new TextEncoder();
-      
       let printData = [];
       printData.push(...initPrinter);
       printData.push(...alignCenter);
-      printData.push(...encoder.encode("ครัวออยออย\n--------------------------------\n"));
+      printData.push(...encoder.encode("ครัวออยออย\n"));
       printData.push(...alignLeft);
-      printData.push(...encoder.encode(text + "\n"));
-      printData.push(...alignCenter);
-      printData.push(...encoder.encode("--------------------------------\n"));
-      printData.push(...lineFeed);
+      printData.push(...encoder.encode(receiptText));
 
-      // ทยอยส่งข้อมูล (Chunk ละไม่เกิน 100 bytes เพื่อป้องกันบัฟเฟอร์บลูทูธล้น)
       const dataArray = new Uint8Array(printData);
       const chunkSize = 100;
       for (let i = 0; i < dataArray.length; i += chunkSize) {
         const chunk = dataArray.slice(i, i + chunkSize);
         await printCharacteristic.writeValue(chunk);
       }
+
+      // พิมพ์เสร็จแล้วล้างหน้าจอเตรียมรับคิวถัดไป
+      clearAllOrders();
     }
   </script>
 </body>
