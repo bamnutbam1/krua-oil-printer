@@ -3,56 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ครัวออยออย - คิดเงินและพิมพ์ใบเสร็จ</title>
+  <title>ครัวออยออย - บิลแจ้งรายการอาหาร</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 10px; background-color: #f4f6f8; margin: 0; }
-    .card { background: white; padding: 14px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 14px; }
-    h2 { margin: 4px 0 10px 0; font-size: 22px; color: #b02a37; text-align: center; }
+    .card { background: white; padding: 14px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 12px; }
+    h2 { margin: 4px 0 8px 0; font-size: 20px; color: #b02a37; text-align: center; }
     
     .status { padding: 8px; border-radius: 6px; background: #e9ecef; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 10px; }
     .status.connected { background: #d4edda; color: #155724; }
 
+    input, textarea { width: 100%; padding: 8px; font-size: 14px; border-radius: 6px; border: 1px solid #ced4da; margin-bottom: 6px; }
+    .customer-box { background: #fff8f8; border: 1px solid #f5c2c7; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
+
     button { width: 100%; padding: 10px; font-size: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
     .btn-connect { background-color: #0d6efd; color: white; margin-bottom: 10px; }
-    .btn-print { background-color: #198754; color: white; font-size: 18px; padding: 14px; margin-top: 10px; }
+    .btn-print { background-color: #198754; color: white; font-size: 17px; padding: 12px; margin-top: 8px; }
+    .btn-copy { background-color: #0dcaf0; color: #000; margin-top: 6px; }
     .btn-clear { background-color: #6c757d; color: white; padding: 8px; font-size: 13px; margin-top: 8px; }
 
-    /* หัวข้อหมวดหมู่ */
-    .section-title { font-size: 14px; font-weight: bold; color: #fff; background: #b02a37; padding: 4px 8px; border-radius: 4px; margin: 12px 0 6px 0; }
-    .section-title.sub { background: #495057; font-size: 13px; }
+    .section-title { font-size: 13px; font-weight: bold; color: #fff; background: #b02a37; padding: 4px 8px; border-radius: 4px; margin: 10px 0 6px 0; }
+    .section-title.sub { background: #495057; }
 
-    /* ตะแกรงปุ่มเมนู */
+    /* ปุ่มเมนู */
     .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
     .menu-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .btn-menu { 
       background: #fff; border: 1px solid #ced4da; color: #212529; 
       padding: 8px 4px; font-size: 13px; border-radius: 6px; font-weight: 600;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 48px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 46px;
     }
     .btn-menu span.price { font-size: 12px; color: #d63384; font-weight: bold; margin-top: 2px; }
-    .btn-menu:active { background: #e9ecef; transform: scale(0.97); }
+    .btn-menu:active { background: #e9ecef; }
     .btn-opt { background: #fff3cd; border-color: #ffe69c; color: #664d03; }
 
-    /* รายการคำนวณเงิน */
-    .order-list { border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; padding: 10px 0; margin: 12px 0; }
-    .order-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 14px; }
-    .item-controls { display: flex; align-items: center; gap: 6px; }
-    .qty-btn { width: 26px; height: 26px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid #ccc; background: #fff; font-size: 16px; font-weight: bold; }
-    
-    .total-box { display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: bold; color: #b02a37; padding-top: 6px; }
-    textarea { width: 100%; height: 50px; padding: 8px; font-size: 14px; border-radius: 6px; border: 1px solid #ced4da; }
+    /* การ์ดรายการอาหารในบิล */
+    .bill-box { border: 2px dashed #b02a37; border-radius: 8px; padding: 10px; background: #fff; margin-top: 10px; }
+    .bill-item { border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 8px; }
+    .bill-header-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; }
+    .bill-controls { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; gap: 8px; }
+    .item-notes { font-size: 13px; margin: 4px 0 0 0; padding: 4px 6px; border: 1px solid #dee2e6; border-radius: 4px; }
+    .qty-btn { width: 26px; height: 26px; border-radius: 4px; border: 1px solid #ccc; background: #f8f9fa; font-size: 16px; font-weight: bold; }
+
+    .bill-summary { margin-top: 8px; font-size: 16px; font-weight: bold; color: #b02a37; display: flex; justify-content: space-between; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>🍳 ครัวออยออย</h2>
+    <h2>🧾 บิลแจ้งยอด ครัวออยออย</h2>
     <div id="status" class="status">สถานะ: ยังไม่ได้เชื่อมต่อเครื่องพิมพ์</div>
-    <button class="btn-connect" onclick="connectPrinter()">🔌 เชื่อมต่อเครื่องพิมพ์บลูทูธ</button>
+    <button class="btn-connect" onclick="connectPrinter()">🔌 1. เชื่อมต่อเครื่องพิมพ์บลูทูธ</button>
 
-    <!-- ออปชันพิเศษ / แถมฟรี -->
+    <!-- ข้อมูลลูกค้า -->
+    <div class="customer-box">
+      <div style="font-weight: bold; margin-bottom: 6px; color: #b02a37; font-size: 14px;">ข้อมูลลูกค้า & สถานที่จัดส่ง</div>
+      <input type="text" id="custName" placeholder="ชื่อลูกค้า / เบอร์โทรติดต่อ">
+      <input type="text" id="custAddress" placeholder="สถานที่ส่ง (ส่งฟรี 2 กม.)">
+    </div>
+
+    <!-- เมนูคัดเลือก -->
     <div class="section-title sub">✨ ออปชันพิเศษ / แถมฟรี</div>
     <div class="menu-grid-3">
       <button class="btn-menu btn-opt" onclick="addItem('แถม: ไข่ดาวฟรี', 0)">ไข่ดาวฟรี <span class="price">0.-</span></button>
@@ -60,123 +70,56 @@
       <button class="btn-menu btn-opt" onclick="addItem('สั่งพิเศษ (+10)', 10)">สั่งพิเศษ <span class="price">+10.-</span></button>
     </div>
 
-    <!-- อาหารแนะนำ -->
-    <div class="section-title">⭐ อาหารแนะนำ</div>
+    <div class="section-title">⭐ เมนูยอดนิยม / อาหารจานด่วน</div>
     <div class="menu-grid">
-      <button class="btn-menu" onclick="addItem('กะเพราหมูสับ', 50)">กะเพราหมูสับ <span class="price">50.-</span></button>
       <button class="btn-menu" onclick="addItem('กะเพราหมูกรอบ', 65)">กะเพราหมูกรอบ <span class="price">65.-</span></button>
-      <button class="btn-menu" onclick="addItem('กะเพราทะเล (กุ้ง/หมึก)', 65)">กะเพราทะเล <span class="price">65.-</span></button>
-      <button class="btn-menu" onclick="addItem('กะเพราเนื้อ', 60)">กะเพราเนื้อ <span class="price">60.-</span></button>
-      <button class="btn-menu" onclick="addItem('กะเพราไก่', 50)">กะเพราไก่ <span class="price">50.-</span></button>
-      <button class="btn-menu" onclick="addItem('กะเพราตับหมู', 60)">กะเพราตับหมู <span class="price">60.-</span></button>
-      <button class="btn-menu" onclick="addItem('หมูกระเทียม', 50)">หมูกระเทียม <span class="price">50.-</span></button>
-      <button class="btn-menu" onclick="addItem('ไก่กระเทียม', 50)">ไก่กระเทียม <span class="price">50.-</span></button>
-      <button class="btn-menu" onclick="addItem('หมูกรอบคั่วพริกเกลือ', 65)">หมูกรอบคั่วพริกเกลือ <span class="price">65.-</span></button>
-      <button class="btn-menu" onclick="addItem('ตับคั่วพริกเกลือ', 55)">ตับคั่วพริกเกลือ <span class="price">55.-</span></button>
-      <button class="btn-menu" onclick="addItem('กะเพราปลากระป๋อง', 55)">กะเพราปลากระป๋อง <span class="price">55.-</span></button>
-      <button class="btn-menu" onclick="addItem('คะน้าปลากระป๋อง', 55)">คะน้าปลากระป๋อง <span class="price">55.-</span></button>
-      <button class="btn-menu" onclick="addItem('ข้าวไข่ขยี้ปลากระป๋อง', 55)">ไข่ขยี้ปลากระป๋อง <span class="price">55.-</span></button>
-      <button class="btn-menu" onclick="addItem('ข้าวไข่ข้นกุ้งกระเทียม', 65)">ไข่ข้นกุ้งกระเทียม <span class="price">65.-</span></button>
-      <button class="btn-menu" onclick="addItem('ปลาหมึกผัดไข่เค็ม', 65)">ปลาหมึกผัดไข่เค็ม <span class="price">65.-</span></button>
-      <button class="btn-menu" onclick="addItem('ผัดซีอิ๊วหมู', 50)">ผัดซีอิ๊วหมู <span class="price">50.-</span></button>
-      <button class="btn-menu" onclick="addItem('ผัดซีอิ๊วทะเล', 65)">ผัดซีอิ๊วทะเล <span class="price">65.-</span></button>
-      <button class="btn-menu" onclick="addItem('ผัดผงกะหรี่ หมู/ไก่', 55)">ผัดผงกะหรี่ หมู/ไก่ <span class="price">55.-</span></button>
-      <button class="btn-menu" onclick="addItem('ผัดแตงกวาใส่ไข่ใส่หมูสับ', 50)">แตงกวาผัดไข่หมูสับ <span class="price">50.-</span></button>
-      <button class="btn-menu" onclick="addItem('ผัดดอกหอมใส่ตับ', 55)">ผัดดอกหอมใส่ตับ <span class="price">55.-</span></button>
-    </div>
-
-    <!-- ข้าวผัด & สุกี้ -->
-    <div class="section-title">🍚 ข้าวผัด & สุกี้</div>
-    <div class="menu-grid">
-      <button class="btn-menu" onclick="addItem('ข้าวผัดหมู', 50)">ข้าวผัดหมู <span class="price">50.-</span></button>
-      <button class="btn-menu" onclick="addItem('ข้าวผัดไก่', 50)">ข้าวผัดไก่ <span class="price">50.-</span></button>
-      <button class="btn-menu" onclick="addItem('ข้าวผัดทะเล', 65)">ข้าวผัดทะเล <span class="price">65.-</span></button>
-      <button class="btn-menu" onclick="addItem('ข้าวผัดหมูกรอบ', 65)">ข้าวผัดหมูกรอบ <span class="price">65.-</span></button>
-      <button class="btn-menu" onclick="addItem('สุกี้ (น้ำ/แห้ง) หมู/ไก่', 55)">สุกี้ หมู/ไก่ <span class="price">55.-</span></button>
-      <button class="btn-menu" onclick="addItem('สุกี้ (น้ำ/แห้ง) ทะเล', 65)">สุกี้ ทะเล <span class="price">65.-</span></button>
-    </div>
-
-    <!-- อาหารจานด่วน (หมูกรอบ / ทะเล) -->
-    <div class="section-title">🥓 จานด่วน: หมูกรอบ & ทะเล (65.-)</div>
-    <div class="menu-grid">
+      <button class="btn-menu" onclick="addItem('กะเพราหมูสับ', 50)">กะเพราหมูสับ <span class="price">50.-</span></button>
       <button class="btn-menu" onclick="addItem('คะน้าหมูกรอบ', 65)">คะน้าหมูกรอบ <span class="price">65.-</span></button>
-      <button class="btn-menu" onclick="addItem('ผัดพริกแกงหมูกรอบ', 65)">พริกแกงหมูกรอบ <span class="price">65.-</span></button>
-      <button class="btn-menu" onclick="addItem('หมูกรอบทอดกระเทียม', 65)">หมูกรอบกระเทียม <span class="price">65.-</span></button>
-      <button class="btn-menu" onclick="addItem('ผัดพริกแกงทะเล', 65)">พริกแกงทะเล <span class="price">65.-</span></button>
-      <button class="btn-menu" onclick="addItem('ทะเลทอดกระเทียม', 65)">ทะเลกระเทียม <span class="price">65.-</span></button>
-      <button class="btn-menu" onclick="addItem('ผัดผักรวมหมูกรอบ', 65)">ผัดผักหมูกรอบ <span class="price">65.-</span></button>
-    </div>
-
-    <!-- อาหารจานด่วน (หมู-ไก่ / เนื้อ / ตับ) -->
-    <div class="section-title">🥩 จานด่วน: หมู-ไก่ / เนื้อ / ตับ</div>
-    <div class="menu-grid">
-      <button class="btn-menu" onclick="addItem('ผัดพริกแกง หมู/ไก่', 50)">พริกแกง หมู/ไก่ <span class="price">50.-</span></button>
-      <button class="btn-menu" onclick="addItem('ผัดพริกแกงเนื้อ', 60)">พริกแกงเนื้อ <span class="price">60.-</span></button>
-      <button class="btn-menu" onclick="addItem('ผัดพริกแกงตับ', 55)">พริกแกงตับ <span class="price">55.-</span></button>
-      <button class="btn-menu" onclick="addItem('คะน้า หมู/ไก่', 50)">คะน้า หมู/ไก่ <span class="price">50.-</span></button>
-      <button class="btn-menu" onclick="addItem('ผัดผักรวม หมู/ไก่', 50)">ผัดผัก หมู/ไก่ <span class="price">50.-</span></button>
-      <button class="btn-menu" onclick="addItem('เนื้อทอดกระเทียม', 60)">เนื้อทอดกระเทียม <span class="price">60.-</span></button>
-    </div>
-
-    <!-- ต้มยำ & แกงจืด -->
-    <div class="section-title">🍲 ต้มยำ & แกงจืด (รวมข้าว)</div>
-    <div class="menu-grid">
-      <button class="btn-menu" onclick="addItem('ต้มยำไก่/หมู (รวมข้าว)', 60)">ต้มยำ ไก่/หมู <span class="price">60.-</span></button>
-      <button class="btn-menu" onclick="addItem('ต้มยำทะเล (รวมข้าว)', 70)">ต้มยำ ทะเล <span class="price">70.-</span></button>
-      <button class="btn-menu" onclick="addItem('แกงจืดเต้าหู้หมูสับ (รวมข้าว)', 55)">แกงจืดเต้าหู้หมูสับ <span class="price">55.-</span></button>
-    </div>
-
-    <!-- เมนูไข่ & ข้าวเปล่า -->
-    <div class="section-title">🍳 เมนูข้าวไข่ & ข้าวเปล่า</div>
-    <div class="menu-grid">
-      <button class="btn-menu" onclick="addItem('ข้าวไข่เจียวหมูสับ', 40)">ข้าวไข่เจียวหมูสับ <span class="price">40.-</span></button>
-      <button class="btn-menu" onclick="addItem('ข้าวไข่เจียวทรงเครื่อง', 40)">ข้าวไข่เจียวทรงเครื่อง <span class="price">40.-</span></button>
-      <button class="btn-menu" onclick="addItem('ข้าวไข่เจียว 2 ฟอง', 30)">ข้าวไข่เจียว 2 ฟอง <span class="price">30.-</span></button>
-      <button class="btn-menu" onclick="addItem('ข้าวไข่ดาว 2 ฟอง', 30)">ข้าวไข่ดาว 2 ฟอง <span class="price">30.-</span></button>
-      <button class="btn-menu" onclick="addItem('ข้าวไข่เจียว 2 ฟองใส่เครื่อง', 35)">ไข่เจียว 2 ฟองใส่เครื่อง <span class="price">35.-</span></button>
+      <button class="btn-menu" onclick="addItem('หมูกรอบคั่วพริกเกลือ', 65)">หมูกรอบคั่วพริกเกลือ <span class="price">65.-</span></button>
+      <button class="btn-menu" onclick="addItem('กะเพราทะเล', 65)">กะเพราทะเล <span class="price">65.-</span></button>
+      <button class="btn-menu" onclick="addItem('ผัดผงกะหรี่ หมู/ไก่', 55)">ผัดผงกะหรี่ <span class="price">55.-</span></button>
+      <button class="btn-menu" onclick="addItem('ข้าวผัดหมู', 50)">ข้าวผัดหมู <span class="price">50.-</span></button>
+      <button class="btn-menu" onclick="addItem('ข้าวผัดหมูกรอบ', 65)">ข้าวผัดหมูกรอบ <span class="price">65.-</span></button>
+      <button class="btn-menu" onclick="addItem('สุกี้ (น้ำ/แห้ง)', 55)">สุกี้ น้ำ/แห้ง <span class="price">55.-</span></button>
+      <button class="btn-menu" onclick="addItem('ต้มยำ (รวมข้าว)', 60)">ต้มยำ รวมข้าว <span class="price">60.-</span></button>
+      <button class="btn-menu" onclick="addItem('ข้าวไข่เจียวทรงเครื่อง', 40)">ไข่เจียวทรงเครื่อง <span class="price">40.-</span></button>
       <button class="btn-menu" onclick="addItem('ข้าวเปล่า', 10)">ข้าวเปล่า <span class="price">10.-</span></button>
     </div>
 
-    <!-- สรุปรายการคำนวณเงิน -->
-    <div class="order-list">
-      <div style="font-weight: bold; margin-bottom: 6px; color: #333;">รายการที่สั่ง:</div>
-      <div id="selectedItems">ยังไม่มีรายการ</div>
-      
-      <div class="total-box">
-        <span>ยอดรวมทั้งสิ้น:</span>
-        <span id="totalAmount">0 ฿</span>
+    <!-- แผงแสดงบิลเรียกเก็บเงิน -->
+    <div class="bill-box">
+      <div style="font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-bottom: 8px;">
+        📋 รายการแจ้งเรียกเก็บเงิน:
+      </div>
+      <div id="billItems">ยังไม่มีรายการอาหาร</div>
+
+      <div class="bill-summary">
+        <span>ยอดเรียกเก็บสุทธิ:</span>
+        <span id="grandTotal">0 ฿</span>
       </div>
     </div>
 
-    <label style="font-size: 13px; color: #666; font-weight: bold;">หมายเหตุ / คัดลอกจาก LINE:</label>
-    <textarea id="extraNotes" placeholder="เช่น เผ็ดน้อย, แยกกับข้าว, ส่งที่..."></textarea>
-
-    <button class="btn-clear" onclick="clearAllOrders()">ล้างรายการทั้งหมด</button>
-    <button class="btn-print" onclick="printReceipt()">🖨️ พิมพ์ใบเสร็จครัวออยออย</button>
+    <button class="btn-print" onclick="printReceipt()">🖨️ 2. พิมพ์บิลส่งลูกค้า</button>
+    <button class="btn-copy" onclick="copyBillToClipboard()">📋 คัดลอกข้อความบิล (ส่งเข้า LINE)</button>
+    <button class="btn-clear" onclick="clearBill()">ล้างข้อมูลบิลทั้งหมด</button>
   </div>
 
   <script>
     let printCharacteristic = null;
-    let currentOrders = {};
+    // รายการสินค้า: [ { id: 1, name: "กะเพรา", price: 65, qty: 1, note: "" } ]
+    let orderItems = [];
 
-    // 1. เชื่อมต่อเครื่องพิมพ์บลูทูธ
+    // 1. บลูทูธ
     async function connectPrinter() {
       try {
         const statusEl = document.getElementById("status");
         statusEl.innerText = "กำลังค้นหาเครื่องพิมพ์...";
-        
         const device = await navigator.bluetooth.requestDevice({
           acceptAllDevices: true,
-          optionalServices: [
-            '000018f0-0000-1000-8000-00805f9b34fb',
-            'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
-            0xFFE0
-          ]
+          optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2', 0xFFE0]
         });
-
         const server = await device.gatt.connect();
         const services = await server.getPrimaryServices();
-        
         for (const service of services) {
           const characteristics = await service.getCharacteristics();
           for (const char of characteristics) {
@@ -187,7 +130,6 @@
           }
           if (printCharacteristic) break;
         }
-
         if (printCharacteristic) {
           statusEl.innerText = `เชื่อมต่อแล้ว: ${device.name || "เครื่องพิมพ์บลูทูธ"}`;
           statusEl.className = "status connected";
@@ -197,131 +139,145 @@
       }
     }
 
-    // 2. จัดการออเดอร์
+    // 2. จัดการเมนูและหมายเหตุ
     function addItem(name, price) {
-      if (currentOrders[name]) {
-        currentOrders[name].qty += 1;
+      const existing = orderItems.find(i => i.name === name);
+      if (existing) {
+        existing.qty += 1;
       } else {
-        currentOrders[name] = { price: price, qty: 1 };
+        orderItems.push({ id: Date.now() + Math.random(), name, price, qty: 1, note: "" });
       }
-      renderOrderList();
+      renderBill();
     }
 
-    function changeQty(name, delta) {
-      if (!currentOrders[name]) return;
-      currentOrders[name].qty += delta;
-      if (currentOrders[name].qty <= 0) {
-        delete currentOrders[name];
+    function updateQty(idx, delta) {
+      orderItems[idx].qty += delta;
+      if (orderItems[idx].qty <= 0) {
+        orderItems.splice(idx, 1);
       }
-      renderOrderList();
+      renderBill();
     }
 
-    function clearAllOrders() {
-      currentOrders = {};
-      document.getElementById("extraNotes").value = "";
-      renderOrderList();
+    function updateNote(idx, text) {
+      orderItems[idx].note = text;
     }
 
     function calculateTotal() {
-      let total = 0;
-      for (const item in currentOrders) {
-        total += currentOrders[item].price * currentOrders[item].qty;
-      }
-      return total;
+      return orderItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
     }
 
-    function renderOrderList() {
-      const container = document.getElementById("selectedItems");
-      const totalEl = document.getElementById("totalAmount");
-      const keys = Object.keys(currentOrders);
-      
-      if (keys.length === 0) {
-        container.innerHTML = '<span style="color:#888;">ยังไม่มีรายการ</span>';
-        totalEl.innerText = "0 ฿";
+    function clearBill() {
+      orderItems = [];
+      document.getElementById("custName").value = "";
+      document.getElementById("custAddress").value = "";
+      renderBill();
+    }
+
+    function renderBill() {
+      const container = document.getElementById("billItems");
+      const grandTotalEl = document.getElementById("grandTotal");
+
+      if (orderItems.length === 0) {
+        container.innerHTML = '<span style="color:#888;">ยังไม่มีรายการอาหาร</span>';
+        grandTotalEl.innerText = "0 ฿";
         return;
       }
 
       let html = "";
-      keys.forEach(item => {
-        const lineTotal = currentOrders[item].price * currentOrders[item].qty;
+      orderItems.forEach((item, index) => {
+        const lineTotal = item.price * item.qty;
         html += `
-          <div class="order-item">
-            <div>
-              <div>${item}</div>
-              <small style="color:#666;">@${currentOrders[item].price} = <b>${lineTotal}฿</b></small>
+          <div class="bill-item">
+            <div class="bill-header-row">
+              <span>${item.name}</span>
+              <span>${lineTotal} ฿</span>
             </div>
-            <div class="item-controls">
-              <button class="qty-btn" onclick="changeQty('${item}', -1)">-</button>
-              <strong style="min-width: 20px; text-align: center;">${currentOrders[item].qty}</strong>
-              <button class="qty-btn" onclick="changeQty('${item}', 1)">+</button>
+            <div class="bill-controls">
+              <span style="font-size:12px; color:#666;">@${item.price} บาท</span>
+              <div>
+                <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
+                <span style="margin: 0 6px; font-weight:bold;">${item.qty}</span>
+                <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
+              </div>
             </div>
+            <input type="text" class="item-notes" placeholder="หมายเหตุจานนี้ (เช่น เผ็ดน้อย, ไม่ใส่ผัก)" 
+                   value="${item.note}" oninput="updateNote(${index}, this.value)">
           </div>
         `;
       });
+
       container.innerHTML = html;
-      totalEl.innerText = `${calculateTotal()} ฿`;
+      grandTotalEl.innerText = `${calculateTotal()} ฿`;
     }
 
-    // 3. พิมพ์ใบเสร็จ
+    // 3. เตรียมข้อความบิล
+    function generateBillString() {
+      const cust = document.getElementById("custName").value.trim();
+      const addr = document.getElementById("custAddress").value.trim();
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const total = calculateTotal();
+
+      let text = "🧾 บิลแจ้งรายการอาหาร - ครัวออยออย\n";
+      text += "โทร/LINE: 080-9650875 (ส่งฟรี 2 กม.)\n";
+      text += `เวลา: ${timeStr} น.\n`;
+      text += "--------------------------------\n";
+
+      if (cust) text += `ลูกค้า: ${cust}\n`;
+      if (addr) text += `สถานที่ส่ง: ${addr}\n`;
+      if (cust || addr) text += "--------------------------------\n";
+
+      orderItems.forEach(item => {
+        const linePrice = item.price * item.qty;
+        text += `${item.name} x${item.qty} = ${linePrice} บ.\n`;
+        if (item.note.trim()) {
+          text += `  └ หมายเหตุ: ${item.note.trim()}\n`;
+        }
+      });
+
+      text += "--------------------------------\n";
+      text += `ยอดเรียกเก็บสุทธิ: ${total} บาท\n`;
+      text += "--------------------------------\n";
+      text += "ขอบคุณที่อุดหนุนครัวออยออยครับ 🙏\n";
+
+      return text;
+    }
+
+    // 4. พิมพ์ออกบลูทูธ
     async function printReceipt() {
       if (!printCharacteristic) {
         alert("กรุณากดเชื่อมต่อเครื่องพิมพ์บลูทูธก่อนครับ");
         return;
       }
-
-      const keys = Object.keys(currentOrders);
-      const extraNotes = document.getElementById("extraNotes").value.trim();
-
-      if (keys.length === 0 && !extraNotes) {
-        alert("กรุณาเลือกเมนูหรือระบุข้อความออเดอร์");
+      if (orderItems.length === 0) {
+        alert("กรุณาเลือกรายการอาหารก่อนสั่งพิมพ์");
         return;
       }
 
-      const now = new Date();
-      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-      const total = calculateTotal();
-
-      let receiptText = "";
-      receiptText += "--------------------------------\n";
-      receiptText += `เวลา: ${timeStr} น.\n`;
-      receiptText += "โทร: 080-9650875\n";
-      receiptText += "--------------------------------\n";
-
-      keys.forEach(item => {
-        const qty = currentOrders[item].qty;
-        const linePrice = currentOrders[item].price * qty;
-        receiptText += `${item} x${qty} = ${linePrice} B\n`;
-      });
-
-      if (extraNotes) {
-        receiptText += `\nหมายเหตุ: ${extraNotes}\n`;
-      }
-
-      receiptText += "--------------------------------\n";
-      receiptText += `ยอดรวมสุทธิ:  ${total} บาท\n`;
-      receiptText += "--------------------------------\n";
-      receiptText += "  ขอบคุณที่อุดหนุนครัวออยออย ครับ \n\n\n";
-
+      const receiptText = generateBillString() + "\n\n";
       const encoder = new TextEncoder();
       const initPrinter = [0x1B, 0x40];
-      const alignCenter = [0x1B, 0x61, 0x01];
-      const alignLeft = [0x1B, 0x61, 0x00];
-
-      let printData = [];
-      printData.push(...initPrinter);
-      printData.push(...alignCenter);
-      printData.push(...encoder.encode("ครัวออยออย\n"));
-      printData.push(...alignLeft);
-      printData.push(...encoder.encode(receiptText));
-
+      
+      let printData = [...initPrinter, ...encoder.encode(receiptText)];
       const dataArray = new Uint8Array(printData);
       const chunkSize = 100;
+
       for (let i = 0; i < dataArray.length; i += chunkSize) {
         const chunk = dataArray.slice(i, i + chunkSize);
         await printCharacteristic.writeValue(chunk);
       }
+    }
 
-      clearAllOrders();
+    // 5. คัดลอกข้อความส่งทาง LINE
+    function copyBillToClipboard() {
+      if (orderItems.length === 0) {
+        alert("กรุณาเลือกรายการอาหารก่อนคัดลอก");
+        return;
+      }
+      const text = generateBillString();
+      navigator.clipboard.writeText(text).then(() => {
+        alert("คัดลอกข้อความบิลเรียบร้อย! สามารถนำไปวางส่งให้ลูกค้าใน LINE ได้ทันที");
+      });
     }
   </script>
 </body>
