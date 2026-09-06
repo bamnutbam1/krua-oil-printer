@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ครัวออยออย - พิมพ์ออเดอร์บลูทูธ</title>
+  <style>
+    body { font-family: sans-serif; padding: 16px; background-color: #f7f7f7; }
+    .card { background: white; padding: 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    button { width: 100%; padding: 12px; margin: 8px 0; font-size: 16px; border-radius: 6px; border: none; font-weight: bold; }
+    .btn-connect { background-color: #007bff; color: white; }
+    .btn-print { background-color: #28a745; color: white; }
+    textarea { width: 100%; height: 120px; box-sizing: border-box; padding: 8px; font-size: 16px; }
+    .status { margin-bottom: 12px; font-weight: bold; color: #555; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>ครัวออยออย (เครื่องพิมพ์บลูทูธ)</h2>
+    <div id="status" class="status">สถานะ: ยังไม่ได้เชื่อมต่อ</div>
+    
+    <button class="btn-connect" onclick="connectPrinter()">1. เชื่อมต่อเครื่องพิมพ์บลูทูธ</button>
+
+    <p>วางข้อความออเดอร์จาก LINE ที่นี่:</p>
+    <textarea id="orderText" placeholder="ตัวอย่าง:&#10;กะเพราหมูกรอบ 2&#10;คะน้าหมูกรอบ 1 พิเศษ"></textarea>
+
+    <button class="btn-print" onclick="printReceipt()">2. พิมพ์ใบเสร็จ</button>
+  </div>
+
+  <script>
+    let printCharacteristic = null;
+
+    // 1. ค้นหาและเชื่อมต่อเครื่องพิมพ์บลูทูธ
+    async function connectPrinter() {
+      try {
+        document.getElementById("status").innerText = "สถานะ: กำลังค้นหาเครื่องพิมพ์...";
+        
+        // ค้นหาอุปกรณ์บลูทูธ (Serial Port Profile)
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2', 0xFFE0]
+        });
+
+        const server = await device.gatt.connect();
+        
+        // ดึง Service และ Characteristic สำหรับส่งคำสั่งพิมพ์
+        const services = await server.getPrimaryServices();
+        for (const service of services) {
+          const characteristics = await service.getCharacteristics();
+          for (const char of characteristics) {
+            if (char.properties.write || char.properties.writeWithoutResponse) {
+              printCharacteristic = char;
+              break;
+            }
+          }
+          if (printCharacteristic) break;
+        }
+
+        if (printCharacteristic) {
+          document.getElementById("status").innerText = `สถานะ: เชื่อมต่อสำเร็จ (${device.name})`;
+        } else {
+          document.getElementById("status").innerText = "สถานะ: ไม่พบลักษณะการส่งข้อมูลพิมพ์";
+        }
+      } catch (error) {
+        document.getElementById("status").innerText = `ข้อผิดพลาด: ${error.message}`;
+      }
+    }
+
+    // 2. จัดรูปแบบและส่งข้อมูลไปยังเครื่องพิมพ์
+    async function printReceipt() {
+      if (!printCharacteristic) {
+        alert("กรุณากดเชื่อมต่อเครื่องพิมพ์ก่อนครับ");
+        return;
+      }
+
+      const text = document.getElementById("orderText").value.trim();
+      if (!text) {
+        alert("กรุณากรอกข้อความออเดอร์");
+        return;
+      }
+
+      // คำสั่ง ESC/POS เบื้องต้น
+      const initPrinter = [0x1B, 0x40]; // Initialize
+      const alignCenter = [0x1B, 0x61, 0x01];
+      const alignLeft = [0x1B, 0x61, 0x00];
+      const lineFeed = [0x0A, 0x0A, 0x0A]; // เลื่อนกระดาษ 3 บรรทัด
+
+      // แปลงข้อความเป็นรหัส TIS-620 หรือ UTF-8 ตามที่เครื่องพิมพ์รองรับ
+      const encoder = new TextEncoder();
+      
+      let printData = [];
+      printData.push(...initPrinter);
+      printData.push(...alignCenter);
+      printData.push(...encoder.encode("ครัวออยออย\n--------------------------------\n"));
+      printData.push(...alignLeft);
+      printData.push(...encoder.encode(text + "\n"));
+      printData.push(...alignCenter);
+      printData.push(...encoder.encode("--------------------------------\n"));
+      printData.push(...lineFeed);
+
+      // ทยอยส่งข้อมูล (Chunk ละไม่เกิน 100 bytes เพื่อป้องกันบัฟเฟอร์บลูทูธล้น)
+      const dataArray = new Uint8Array(printData);
+      const chunkSize = 100;
+      for (let i = 0; i < dataArray.length; i += chunkSize) {
+        const chunk = dataArray.slice(i, i + chunkSize);
+        await printCharacteristic.writeValue(chunk);
+      }
+    }
+  </script>
+</body>
+</html>
