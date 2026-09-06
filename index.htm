@@ -75,11 +75,8 @@
     .pill.active { background: #fef08a; border-color: #eab308; font-weight: bold; color: #854d0e; }
     .pill.active-opt { background: #fee2e2; border-color: #f87171; font-weight: bold; color: #991b1b; }
     .price-input { width: 45px; padding: 2px 4px; font-size: 11px; font-weight: bold; border-radius: 4px; border: 1px solid #f87171; color: #b91c1c; text-align: center; }
-
-    /* ช่องแก้ไขราคาต่อหน่วย */
     .unit-price-edit { width: 55px; padding: 2px 4px; font-size: 12px; font-weight: bold; border-radius: 4px; border: 1px solid #cbd5e1; color: #b91c1c; text-align: center; background: #fff; }
 
-    /* ช่องกรอกพิเศษอื่นๆ */
     .custom-special-box { display: flex; gap: 4px; align-items: center; margin-top: 4px; background: #fffbeb; padding: 4px; border-radius: 6px; border: 1px solid #fde68a; }
     .custom-special-name { flex: 1; padding: 3px 6px; font-size: 11px; border-radius: 4px; border: 1px solid #cbd5e1; }
     .custom-special-price { width: 50px; padding: 3px 4px; font-size: 11px; font-weight: bold; border-radius: 4px; border: 1px solid #cbd5e1; text-align: center; color: #b91c1c; }
@@ -184,7 +181,7 @@
         </div>
       </div>
 
-      <!-- แท็บหมวดหมู่ (เพิ่ม ข้าวผัด, เอาผัดถั่วฝักยาวออก) -->
+      <!-- แท็บหมวดหมู่ -->
       <div class="nav-tabs">
         <button class="nav-tab active" onclick="setTab('fast')">🍛 จานด่วน</button>
         <button class="nav-tab" onclick="setTab('rec')">⭐ เมนูแนะนำ</button>
@@ -223,10 +220,10 @@
 
       <div id="tabEtc" style="display: none;">
         <div class="grid-2">
-          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวหมูสับ', 40)"><span class="name">ข้าวไข่เจียวหมูสับ</span><span class="price">40.-</span></div>
-          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวทรงเครื่อง', 40)"><span class="name">ข้าวไข่เจียวทรงเครื่อง</span><span class="price">40.-</span></div>
-          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียว 2 ฟอง', 30)"><span class="name">ข้าวไข่เจียว 2 ฟอง</span><span class="price">30.-</span></div>
-          <div class="btn-card" onclick="addDirect('ข้าวไข่ดาว 2 ฟอง', 30)"><span class="name">ข้าวไข่ดาว 2 ฟอง</span><span class="price">30.-</span></div>
+          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวหมูสับ', 40)"><span class="name">ไข่เจียวหมูสับ</span><span class="price">40.-</span></div>
+          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวทรงเครื่อง', 40)"><span class="name">ไข่เจียวทรงเครื่อง</span><span class="price">40.-</span></div>
+          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียว 2 ฟอง', 30)"><span class="name">ไข่เจียว 2 ฟอง</span><span class="price">30.-</span></div>
+          <div class="btn-card" onclick="addDirect('ข้าวไข่ดาว 2 ฟอง', 30)"><span class="name">ไข่ดาว 2 ฟอง</span><span class="price">30.-</span></div>
           <div class="btn-card" onclick="addDirect('ข้าวเปล่า', 10)"><span class="name">ข้าวเปล่า</span><span class="price">10.-</span></div>
         </div>
       </div>
@@ -397,15 +394,15 @@
       billItems.push({
         id: Date.now() + Math.random(),
         name: name,
-        price: price,            // ราคาตั้งต้น (สามารถแก้ไขตัวเลขได้)
+        price: price,
         dishPrice: 80,
         qty: qty,
         eggOption: egg,
         extraEggPrice: extraEggPrice,
         isDishOnly: false,
         special: false,
-        customSpecialText: customSpecialText, // ข้อความพิเศษอื่นๆ ที่กรอกเอง
-        customSpecialPrice: customSpecialPrice, // ราคาพิเศษอื่นๆ ที่กรอกเอง
+        customSpecialText: customSpecialText,
+        customSpecialPrice: customSpecialPrice,
         personName: person,
         note: note,
         isPaid: false
@@ -420,12 +417,13 @@
 
       const encoder = new TextEncoder();
       const init = [0x1B, 0x40];
+      const thaiCodePage = [0x1B, 0x74, 0x1B]; // เปิดโหมดภาษาไทยสำหรับ BT-58D
       const boldOn = [0x1B, 0x45, 0x01];
       const boldOff = [0x1B, 0x45, 0x00];
       const doubleSize = [0x1D, 0x21, 0x11];
       const normalSize = [0x1D, 0x21, 0x00];
 
-      let printData = [...init, ...boldOn, ...doubleSize];
+      let printData = [...init, ...thaiCodePage, ...boldOn, ...doubleSize];
       printData.push(...encoder.encode("[ ออเดอร์จาก LINE ]\n"));
       printData.push(...normalSize, ...boldOff);
       printData.push(...encoder.encode("================================\n"));
@@ -519,7 +517,6 @@
     function deleteItem(idx) { billItems.splice(idx, 1); renderBill(); }
     function updateItemName(idx, val) { billItems[idx].name = val; }
     
-    // ฟังก์ชันแก้ไขราคาต่อหน่วยโดยตรง
     function updateUnitPriceDirect(idx, val) {
       const p = parseFloat(val);
       billItems[idx].price = isNaN(p) ? 0 : p;
@@ -532,7 +529,6 @@
     function updateDishPrice(idx, val) { billItems[idx].dishPrice = parseFloat(val) || 0; updateTotals(); }
     function toggleSpecial(idx) { billItems[idx].special = !billItems[idx].special; renderBill(); }
     
-    // อัปเดตข้อมูลพิเศษอื่นๆ
     function toggleCustomSpecial(idx) {
       billItems[idx].showCustomSpecial = !billItems[idx].showCustomSpecial;
       renderBill();
@@ -650,7 +646,6 @@
               <button class="btn-delete" onclick="deleteItem(${idx})">🗑️</button>
             </div>
 
-            <!-- แก้ไขราคาต่อหน่วยได้ -->
             <div style="display:flex; align-items:center; gap:6px; margin:4px 0; font-size:12px; color:#475569;">
               <span>ราคาต่อหน่วย:</span>
               <input type="number" class="unit-price-edit" value="${item.price}" oninput="updateUnitPriceDirect(${idx}, this.value)"> บ.
@@ -679,7 +674,6 @@
               <span class="pill ${item.showCustomSpecial ? 'active-opt' : ''}" onclick="toggleCustomSpecial(${idx})">+ พิเศษอื่นๆ</span>
             </div>
 
-            <!-- ช่องกรอกข้อความและราคาพิเศษอื่นๆ ที่กำหนดเองได้ -->
             ${item.showCustomSpecial ? `
               <div class="custom-special-box">
                 <input type="text" class="custom-special-name" placeholder="ระบุพิเศษ (เช่น เพิ่มหมู, น้ำจิ้มซีฟู้ด)" 
@@ -963,6 +957,7 @@
       }
     }
 
+    // บังคับเปิดรหัส Code Page 874 / Thai Mode สำหรับเครื่อง BT-58D
     async function printReceipt() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
       if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
@@ -971,10 +966,11 @@
       const text = buildReceiptText();
       const encoder = new TextEncoder();
       const init = [0x1B, 0x40];
+      const thaiCodePage = [0x1B, 0x74, 0x1B]; // เปิดโหมดภาษาไทย
       const alignCenter = [0x1B, 0x61, 0x01];
       const alignLeft = [0x1B, 0x61, 0x00];
 
-      let printData = [...init, ...alignLeft, ...encoder.encode(text), ...alignCenter];
+      let printData = [...init, ...thaiCodePage, ...alignLeft, ...encoder.encode(text), ...alignCenter];
 
       const qrPayloadBytes = encoder.encode(SHOP_PROMPTPAY_PAYLOAD);
       const len = qrPayloadBytes.length + 3;
@@ -997,12 +993,13 @@
 
       const encoder = new TextEncoder();
       const init = [0x1B, 0x40];
+      const thaiCodePage = [0x1B, 0x74, 0x1B]; // เปิดโหมดภาษาไทย
       const doubleSize = [0x1D, 0x21, 0x11];
       const normalSize = [0x1D, 0x21, 0x00];
-      const boldOn = [0x1B, 0x40, 0x1B, 0x45, 0x01];
+      const boldOn = [0x1B, 0x45, 0x01];
       const boldOff = [0x1B, 0x45, 0x00];
 
-      let printData = [...init];
+      let printData = [...init, ...thaiCodePage];
 
       printData.push(...boldOn, ...doubleSize);
       printData.push(...encoder.encode("[ ใบสั่งเข้าครัว ]\n"));
