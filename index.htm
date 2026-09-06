@@ -16,26 +16,22 @@
     .status-badge { padding: 4px 10px; border-radius: 12px; background: #e2e8f0; font-size: 11px; font-weight: bold; }
     .status-badge.connected { background: #dcfce7; color: #166534; }
 
-    /* แท็บสลับหน้า */
     .main-nav { display: flex; gap: 6px; margin-bottom: 8px; }
     .main-nav-btn { flex: 1; padding: 9px; text-align: center; background: #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: bold; border: none; cursor: pointer; color: #334155; }
     .main-nav-btn.active { background: #b91c1c; color: white; }
 
-    /* ข้อมูลหัวบิล */
     .bill-meta-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .meta-group { display: flex; flex-direction: column; }
     .meta-group.full { grid-column: span 2; }
     .meta-label { font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 2px; }
     .meta-input { width: 100%; padding: 6px 8px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; }
 
-    /* นำเข้าจาก LINE */
     .import-box { background: #f0fdf4; border: 1px dashed #22c55e; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
     .import-box textarea { width: 100%; height: 70px; font-size: 12px; padding: 6px; border-radius: 6px; border: 1px solid #86efac; margin-bottom: 6px; }
     .line-action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .btn-parse { background: #16a34a; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; width: 100%; font-size: 12px; cursor: pointer; }
     .btn-print-raw { background: #0284c7; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; width: 100%; font-size: 12px; cursor: pointer; }
 
-    /* แท็บหมวดหมู่ */
     .nav-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
     .nav-tab { flex: 1; padding: 7px 4px; text-align: center; background: #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; color: #475569; }
     .nav-tab.active { background: #475569; color: white; }
@@ -46,7 +42,6 @@
     .btn-card .name { font-size: 13px; font-weight: 600; }
     .btn-card .price { font-size: 12px; color: #b91c1c; font-weight: bold; }
 
-    /* จานด่วน */
     .step-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px; margin-bottom: 6px; }
     .chips-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
     .chip-btn { background: #fff; border: 1px solid #cbd5e1; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 600; text-align: center; cursor: pointer; }
@@ -56,7 +51,6 @@
     .meat-btn { background: #fef2f2; border: 1px solid #fecaca; padding: 6px 2px; border-radius: 6px; font-size: 12px; font-weight: bold; text-align: center; cursor: pointer; color: #991b1b; display: flex; flex-direction: column; }
     .meat-btn span.p { font-size: 10px; color: #b91c1c; margin-top: 2px; }
 
-    /* บิลรายการ */
     .bill-box { border: 2px dashed #cbd5e1; border-radius: 10px; padding: 8px; background: #fff; margin-top: 8px; }
     .bill-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 8px; }
     .bill-item.is-paid { background: #f0fdf4; border-radius: 6px; padding: 6px; }
@@ -88,12 +82,10 @@
     .row-inputs { display: grid; grid-template-columns: 1fr 1.2fr; gap: 4px; margin-top: 4px; }
     .sub-input { width: 100%; padding: 4px; font-size: 11px; border-radius: 4px; border: 1px solid #e2e8f0; }
 
-    /* สรุปยอดเงิน */
     .summary-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-top: 8px; font-size: 13px; }
     .summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
     .summary-row.due { font-size: 16px; font-weight: bold; color: #b91c1c; border-top: 1px dashed #cbd5e1; padding-top: 6px; margin-top: 4px; }
 
-    /* ปุ่มสั่งการ */
     .btn-act { width: 100%; padding: 10px; font-size: 14px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 6px; }
     .btn-blue { background: #0284c7; color: white; padding: 6px; font-size: 12px; margin-bottom: 6px; }
     .btn-kitchen { background: #d97706; color: white; font-size: 15px; }
@@ -107,7 +99,6 @@
     .btn-sheet { background: #059669; color: white; }
     .btn-gray { background: #64748b; color: white; padding: 8px; font-size: 13px; }
 
-    /* Modal */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; padding: 12px; }
     .receipt-paper { background: #fff; width: 100%; max-width: 360px; max-height: 90vh; border-radius: 8px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
     .receipt-content { font-family: monospace, sans-serif; font-size: 13px; line-height: 1.4; color: #000; overflow-y: auto; white-space: pre-wrap; background: #fafafa; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px; margin: 8px 0; }
@@ -118,7 +109,6 @@
     #qrcode { display: flex; justify-content: center; margin: 6px 0; }
     .btn-save-qr { background: #0284c7; color: white; border: none; padding: 5px 12px; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 4px; }
 
-    /* ประวัติบิล */
     .history-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
     .history-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
     .history-meta { font-size: 12px; color: #64748b; margin-bottom: 4px; }
@@ -142,7 +132,6 @@
       <button id="navHistBtn" class="main-nav-btn" onclick="switchMainPage('history')">📅 ประวัติบิลย้อนหลัง</button>
     </div>
 
-    <!-- หน้าที่ 1: จัดการบิล / ออกบิล -->
     <div id="pagePos">
       <div class="bill-meta-box">
         <div class="meta-group">
@@ -171,7 +160,6 @@
         </div>
       </div>
 
-      <!-- นำเข้าจาก LINE -->
       <div class="import-box">
         <div style="font-size:12px; font-weight:bold; color:#166534; margin-bottom:4px;">📥 วางข้อความจาก LINE:</div>
         <textarea id="lineRawText" placeholder="วางข้อความที่ลูกค้าสั่งที่นี่..."></textarea>
@@ -181,7 +169,6 @@
         </div>
       </div>
 
-      <!-- แท็บหมวดหมู่ -->
       <div class="nav-tabs">
         <button class="nav-tab active" onclick="setTab('fast')">🍛 จานด่วน</button>
         <button class="nav-tab" onclick="setTab('rec')">⭐ เมนูแนะนำ</button>
@@ -220,15 +207,14 @@
 
       <div id="tabEtc" style="display: none;">
         <div class="grid-2">
-          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวหมูสับ', 40)"><span class="name">ไข่เจียวหมูสับ</span><span class="price">40.-</span></div>
-          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวทรงเครื่อง', 40)"><span class="name">ไข่เจียวทรงเครื่อง</span><span class="price">40.-</span></div>
+          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวหมูสับ', 40)"><span class="name">ข้าวไข่เจียวหมูสับ</span><span class="price">40.-</span></div>
+          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวทรงเครื่อง', 40)"><span class="name">ข้าวไข่เจียวทรงเครื่อง</span><span class="price">40.-</span></div>
           <div class="btn-card" onclick="addDirect('ข้าวไข่เจียว 2 ฟอง', 30)"><span class="name">ไข่เจียว 2 ฟอง</span><span class="price">30.-</span></div>
           <div class="btn-card" onclick="addDirect('ข้าวไข่ดาว 2 ฟอง', 30)"><span class="name">ไข่ดาว 2 ฟอง</span><span class="price">30.-</span></div>
           <div class="btn-card" onclick="addDirect('ข้าวเปล่า', 10)"><span class="name">ข้าวเปล่า</span><span class="price">10.-</span></div>
         </div>
       </div>
 
-      <!-- บิลรายการ -->
       <div class="bill-box">
         <div style="font-weight:bold; font-size:13px; border-bottom:1px solid #f1f5f9; padding-bottom:4px; margin-bottom:6px;">
           📋 รายการออเดอร์:
@@ -242,7 +228,6 @@
         </div>
       </div>
 
-      <!-- แผนกห้องครัว -->
       <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:8px; margin-top:8px;">
         <div style="font-size:12px; font-weight:bold; color:#b45309; margin-bottom:4px;">👨‍🍳 แผนกครัว (หน้าเตา):</div>
         <button class="btn-act btn-preview-kitchen" onclick="openKitchenPreview()">👁️ ดูตัวอย่างใบครัว</button>
@@ -250,7 +235,6 @@
         <button class="btn-act btn-kitchen-line" onclick="copyKitchenToLine()">📲 คัดลอกใบครัวส่ง LINE</button>
       </div>
 
-      <!-- แผนกคิดเงิน -->
       <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:8px; margin-top:8px;">
         <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px;">🧾 แผนกคิดเงิน & ลูกค้า:</div>
         <button class="btn-act btn-preview" onclick="openReceiptPreview()">👁️ ดูตัวอย่างบิล & QR Code ชำระเงิน</button>
@@ -262,7 +246,6 @@
       <button class="btn-act btn-gray" onclick="saveAndClearBill()" style="margin-top:10px;">💾 บันทึกและเริ่มบิลใหม่ (รันเลขบิลถัดไป)</button>
     </div>
 
-    <!-- หน้าที่ 2: ดูประวัติบิลย้อนหลัง -->
     <div id="pageHistory" style="display: none;">
       <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:10px; margin-bottom:10px;">
         <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px;">🔍 เลือกวันที่ต้องการดูประวัติ:</div>
@@ -288,7 +271,6 @@
 
   </div>
 
-  <!-- Modal หน้าต่างจำลองสลิป -->
   <div id="previewModal" class="modal-overlay">
     <div class="receipt-paper">
       <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -330,6 +312,22 @@
     let selectedCookingType = "ผัดกะเพรา";
     let billItems = [];
     let printCharacteristic = null;
+
+    // ฟังก์ชันแปลงตัวอักษรไทยเป็น TIS-620 เพื่อให้เครื่องพิมพ์จีนพิมพ์ไทยได้ ไม่กลายเป็นภาษาจีน
+    function encodeToTIS620(str) {
+      const bytes = [];
+      for (let i = 0; i < str.length; i++) {
+        const code = str.charCodeAt(i);
+        if (code <= 0x7F) {
+          bytes.push(code);
+        } else if (code >= 0x0E01 && code <= 0x0E5B) {
+          bytes.push(code - 0x0E00 + 0xA0);
+        } else {
+          bytes.push(0x20); // space
+        }
+      }
+      return bytes;
+    }
 
     function initMeta() {
       const now = new Date();
@@ -410,25 +408,26 @@
       renderBill();
     }
 
+    // ฟังก์ชันพิมพ์ข้อความดิบ ตัดภาษาจีนทิ้ง 100%
     async function printRawLineText() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
       const text = document.getElementById('lineRawText').value.trim();
       if (!text) return alert("กรุณาวางข้อความจาก LINE ก่อนพิมพ์ครับ");
 
-      const encoder = new TextEncoder();
       const init = [0x1B, 0x40];
-      const thaiCodePage = [0x1B, 0x74, 0x1B]; // เปิดโหมดภาษาไทยสำหรับ BT-58D
+      const disableChinese = [0x1C, 0x2E]; // ยกเลิกโหมดภาษาจีนเด็ดขาด
+      const thaiCodePage = [0x1B, 0x74, 0x1B]; // เปิดตารางไทย
       const boldOn = [0x1B, 0x45, 0x01];
       const boldOff = [0x1B, 0x45, 0x00];
       const doubleSize = [0x1D, 0x21, 0x11];
       const normalSize = [0x1D, 0x21, 0x00];
 
-      let printData = [...init, ...thaiCodePage, ...boldOn, ...doubleSize];
-      printData.push(...encoder.encode("[ ออเดอร์จาก LINE ]\n"));
+      let printData = [...init, ...disableChinese, ...thaiCodePage, ...boldOn, ...doubleSize];
+      printData.push(...encodeToTIS620("[ ออเดอร์จาก LINE ]\n"));
       printData.push(...normalSize, ...boldOff);
-      printData.push(...encoder.encode("================================\n"));
-      printData.push(...encoder.encode(text + "\n"));
-      printData.push(...encoder.encode("================================\n\n\n"));
+      printData.push(...encodeToTIS620("================================\n"));
+      printData.push(...encodeToTIS620(text + "\n"));
+      printData.push(...encodeToTIS620("================================\n\n\n"));
 
       sendChunks(printData);
       alert("🖨️ ส่งข้อความออกเครื่องพิมพ์เรียบร้อย!");
@@ -957,21 +956,22 @@
       }
     }
 
-    // บังคับเปิดรหัส Code Page 874 / Thai Mode สำหรับเครื่อง BT-58D
+    // ฟังก์ชันพิมพ์บิล คิดเงิน (ปิดภาษาจีน + แปลง TIS-620)
     async function printReceipt() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
       if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
       saveBillToHistory();
 
       const text = buildReceiptText();
-      const encoder = new TextEncoder();
       const init = [0x1B, 0x40];
-      const thaiCodePage = [0x1B, 0x74, 0x1B]; // เปิดโหมดภาษาไทย
+      const disableChinese = [0x1C, 0x2E]; // ยกเลิกโหมดภาษาจีน
+      const thaiCodePage = [0x1B, 0x74, 0x1B]; // เปิดตารางไทย
       const alignCenter = [0x1B, 0x61, 0x01];
       const alignLeft = [0x1B, 0x61, 0x00];
 
-      let printData = [...init, ...thaiCodePage, ...alignLeft, ...encoder.encode(text), ...alignCenter];
+      let printData = [...init, ...disableChinese, ...thaiCodePage, ...alignLeft, ...encodeToTIS620(text), ...alignCenter];
 
+      const encoder = new TextEncoder();
       const qrPayloadBytes = encoder.encode(SHOP_PROMPTPAY_PAYLOAD);
       const len = qrPayloadBytes.length + 3;
       const pL = len % 256;
@@ -987,22 +987,23 @@
       sendChunks(printData);
     }
 
+    // ฟังก์ชันพิมพ์ใบครัว (ปิดภาษาจีน + แปลง TIS-620)
     async function printKitchenTicket() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
       if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
 
-      const encoder = new TextEncoder();
       const init = [0x1B, 0x40];
-      const thaiCodePage = [0x1B, 0x74, 0x1B]; // เปิดโหมดภาษาไทย
+      const disableChinese = [0x1C, 0x2E]; // ยกเลิกโหมดภาษาจีน
+      const thaiCodePage = [0x1B, 0x74, 0x1B]; // เปิดตารางไทย
       const doubleSize = [0x1D, 0x21, 0x11];
       const normalSize = [0x1D, 0x21, 0x00];
       const boldOn = [0x1B, 0x45, 0x01];
       const boldOff = [0x1B, 0x45, 0x00];
 
-      let printData = [...init, ...thaiCodePage];
+      let printData = [...init, ...disableChinese, ...thaiCodePage];
 
       printData.push(...boldOn, ...doubleSize);
-      printData.push(...encoder.encode("[ ใบสั่งเข้าครัว ]\n"));
+      printData.push(...encodeToTIS620("[ ใบสั่งเข้าครัว ]\n"));
       printData.push(...normalSize, ...boldOff);
       
       const bNo = document.getElementById('billNo').value.trim();
@@ -1021,7 +1022,7 @@
       else headerStr += "\n";
       if (bCust) headerStr += `ลูกค้า: ${bCust}\n`;
       if (bPlace) headerStr += `สถานที่ส่ง: ${bPlace}\n`;
-      printData.push(...encoder.encode(headerStr + "================================\n\n"));
+      printData.push(...encodeToTIS620(headerStr + "================================\n\n"));
 
       billItems.forEach((item, idx) => {
         let tagStr = "";
@@ -1030,7 +1031,7 @@
         if (item.customSpecialText) tagStr += ` [${item.customSpecialText}]`;
 
         printData.push(...boldOn, ...doubleSize);
-        printData.push(...encoder.encode(`#${idx + 1} ${item.name}${tagStr} x${item.qty}\n`));
+        printData.push(...encodeToTIS620(`#${idx + 1} ${item.name}${tagStr} x${item.qty}\n`));
         printData.push(...normalSize, ...boldOff);
 
         let details = [];
@@ -1039,17 +1040,17 @@
         if (item.note.trim()) details.push(item.note.trim());
         
         if (details.length > 0) {
-          printData.push(...encoder.encode(`   >> ${details.join(' | ')}\n`));
+          printData.push(...encodeToTIS620(`   >> ${details.join(' | ')}\n`));
         }
-        printData.push(...encoder.encode("\n"));
+        printData.push(...encodeToTIS620("\n"));
       });
 
       const totalDishes = billItems.reduce((sum, item) => sum + item.qty, 0);
-      printData.push(...encoder.encode("================================\n"));
+      printData.push(...encodeToTIS620("================================\n"));
       printData.push(...boldOn);
-      printData.push(...encoder.encode(`รวมทั้งหมด: ${totalDishes} รายการ\n`));
+      printData.push(...encodeToTIS620(`รวมทั้งหมด: ${totalDishes} รายการ\n`));
       printData.push(...boldOff);
-      printData.push(...encoder.encode("================================\n\n\n"));
+      printData.push(...encodeToTIS620("================================\n\n\n"));
 
       sendChunks(printData);
     }
