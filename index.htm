@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ครัวออยออย - บิลสั่งอาหาร & ใบสั่งเข้าครัว</title>
+  <title>ครัวออยออย - บิล & QR Code ชำระเงิน</title>
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { padding: 8px; background-color: #f1f5f9; margin: 0; color: #1e293b; }
@@ -49,7 +49,6 @@
     .order-no { background: #b91c1c; color: white; border-radius: 4px; padding: 1px 5px; font-size: 11px; margin-right: 4px; }
     .item-name-input { flex: 1; border: none; border-bottom: 1px dashed #cbd5e1; font-weight: bold; font-size: 13px; padding: 2px 4px; color: #1e293b; background: transparent; }
     
-    /* ปุ่มสถานะจ่ายเงิน */
     .btn-pay-toggle { padding: 4px 8px; font-size: 11px; font-weight: bold; border-radius: 6px; border: 1px solid; cursor: pointer; }
     .btn-pay-toggle.unpaid { background: #fef2f2; color: #b91c1c; border-color: #fca5a5; }
     .btn-pay-toggle.paid { background: #dcfce7; color: #166534; border-color: #86efac; }
@@ -91,10 +90,14 @@
 
     /* Modal หน้าต่างจำลองสลิป */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; padding: 12px; }
-    .receipt-paper { background: #fff; width: 100%; max-width: 360px; max-height: 85vh; border-radius: 8px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
-    .receipt-content { font-family: monospace, sans-serif; font-size: 13px; line-height: 1.4; color: #000; overflow-y: auto; white-space: pre-wrap; background: #fafafa; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px; margin: 10px 0; }
+    .receipt-paper { background: #fff; width: 100%; max-width: 360px; max-height: 90vh; border-radius: 8px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
+    .receipt-content { font-family: monospace, sans-serif; font-size: 13px; line-height: 1.4; color: #000; overflow-y: auto; white-space: pre-wrap; background: #fafafa; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px; margin: 8px 0; }
     .receipt-content.kitchen-preview { font-size: 14px; font-weight: bold; background: #fffbeb; border-color: #fef3c7; }
     .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    /* แสดงภาพ QR Code จริง */
+    .qr-container { text-align: center; margin: 4px 0 8px 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; }
+    .qr-image { width: 180px; height: auto; max-height: 240px; object-fit: contain; }
   </style>
 </head>
 <body>
@@ -186,8 +189,8 @@
     <!-- ส่วนที่ 2: แผนกคิดเงิน -->
     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:8px; margin-top:8px;">
       <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px;">🧾 แผนกคิดเงิน & ลูกค้า:</div>
-      <button class="btn-act btn-preview" onclick="openReceiptPreview()">👁️ ดูตัวอย่างบิลคิดเงิน</button>
-      <button class="btn-act btn-green" onclick="printReceipt()">🖨️ พิมพ์บิลคิดเงินลูกค้า</button>
+      <button class="btn-act btn-preview" onclick="openReceiptPreview()">👁️ ดูตัวอย่างบิล & QR Code ชำระเงิน</button>
+      <button class="btn-act btn-green" onclick="printReceipt()">🖨️ พิมพ์บิลคิดเงินลูกค้า (พร้อม QR)</button>
       <button class="btn-act btn-remind" onclick="copyUnpaidReminder()">📢 คัดลอกสรุปรายการที่รอชำระส่ง LINE</button>
       <button class="btn-act btn-cyan" onclick="copyReceipt()">📋 คัดลอกบิลรวมส่ง LINE</button>
       <button class="btn-act btn-sheet" onclick="exportToCSV()">📊 ดาวน์โหลด Excel/CSV</button>
@@ -196,7 +199,7 @@
     <button class="btn-act btn-gray" onclick="clearBill()" style="margin-top:10px;">ล้างรายการบิล</button>
   </div>
 
-  <!-- Modal หน้าต่างจำลองสลิป -->
+  <!-- Modal หน้าต่างจำลองสลิปพร้อม QR Code -->
   <div id="previewModal" class="modal-overlay">
     <div class="receipt-paper">
       <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -204,14 +207,24 @@
         <span style="font-size:11px; color:#666;">(ไม่ต้องต่อบลูทูธ)</span>
       </div>
       <div id="previewText" class="receipt-content"></div>
+      
+      <!-- แสดงภาพ QR Code จริงของร้าน -->
+      <div id="modalQrBox" class="qr-container" style="display:none;">
+        <div style="font-size:12px; font-weight:bold; color:#166534; margin-bottom:4px;">สแกนจ่าย: บัญชี น.ส. ทัศนีย์ เม่นทอง</div>
+        <img id="qrImg" src="qr.jpg" alt="Thai QR Payment ครัวออยออย" class="qr-image" onerror="this.alt='กรุณาอัปโหลดไฟล์ qr.jpg ขึ้น GitHub'">
+      </div>
+
       <div class="modal-btns">
-        <button class="btn-act btn-gray" style="margin-top:0;" onclick="closePreview()">ปิดหน้าต่าง</button>
-        <button id="modalPrintBtn" class="btn-act btn-green" style="margin-top:0;">🖨️ สั่งพิมพ์</button>
+        <button class="btn-act btn-gray" style="margin-top:4px;" onclick="closePreview()">ปิดหน้าต่าง</button>
+        <button id="modalPrintBtn" class="btn-act btn-green" style="margin-top:4px;">🖨️ สั่งพิมพ์</button>
       </div>
     </div>
   </div>
 
   <script>
+    // ข้อมูลรหัส PromptPay QR Code ของร้านครัวออยออย (K-Shop)
+    const SHOP_PROMPTPAY_PAYLOAD = "00020101021130630016A000000677010111011300660000000000215EMPKB00000196578300153037645802TH5912Krua Oil Oil62070703***6304";
+
     const recList = [
       { name: "กะเพราหมูกรอบ", p: 65 }, { name: "กะเพราหมูสับ", p: 50 },
       { name: "กะเพราหมูชิ้น", p: 50 }, { name: "กะเพราไก่", p: 50 },
@@ -498,7 +511,7 @@
       updateTotals();
     }
 
-    // สร้างข้อความบิลคิดเงิน (ตัดคำว่า รอจ่าย/จ่ายแล้ว ออกจากบรรทัดรายการ)
+    // บิลคิดเงิน
     function buildReceiptText() {
       const cust = document.getElementById('custInfo').value.trim();
       const now = new Date();
@@ -513,7 +526,6 @@
       });
 
       let t = "🧾 บิลรายการอาหาร ครัวออยออย\n";
-      t += "โทร/LINE: 080-9650875 (ส่งฟรี 2 กม.)\n";
       t += `เวลา: ${timeStr} น.\n`;
       if (cust) t += `กลุ่ม/ผู้สั่ง: ${cust}\n`;
       t += "--------------------------------\n";
@@ -527,7 +539,6 @@
         if (item.special) tags.push("พิเศษ");
         const tagStr = tags.length > 0 ? ` (${tags.join(', ')})` : '';
 
-        // แสดงรายการสะอาดตา ไม่มีคำว่า รอจ่าย/จ่ายแล้ว
         t += `#${idx + 1} ${item.name}${tagStr} x${item.qty} = ${lineTotal} บ.\n`;
         
         let details = [];
@@ -544,11 +555,13 @@
         t += `ยอดคงเหลือ: ${total - paid} บาท\n`;
       }
       t += "--------------------------------\n";
+      t += "บัญชี: น.ส. ทัศนีย์ เม่นทอง (K SHOP)\n";
+      t += "[ สแกน QR Code ด้านล่างเพื่อชำระเงิน ]\n";
       t += "ขอบคุณที่อุดหนุนครัวออยออย ครับ 🙏\n";
       return t;
     }
 
-    // สร้างข้อความใบสั่งเข้าครัว
+    // ใบสั่งเข้าครัว
     function buildKitchenText() {
       const cust = document.getElementById('custInfo').value.trim();
       const now = new Date();
@@ -575,25 +588,34 @@
       return t;
     }
 
-    // 1. ดูตัวอย่างบิลคิดเงิน
+    // ดูตัวอย่างบิลคิดเงิน & รูป QR Code
     function openReceiptPreview() {
       if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนครับ");
-      document.getElementById('modalTitle').innerText = "ตัวอย่างบิลคิดเงินลูกค้า";
+      document.getElementById('modalTitle').innerText = "ตัวอย่างบิล & QR Code ชำระเงิน";
       const box = document.getElementById('previewText');
       box.className = "receipt-content";
       box.innerText = buildReceiptText();
+      
+      // แสดงพื้นที่รูปภาพ QR Code
+      const qrBox = document.getElementById('modalQrBox');
+      qrBox.style.display = 'block';
+
       const pBtn = document.getElementById('modalPrintBtn');
       pBtn.onclick = () => { closePreview(); printReceipt(); };
       document.getElementById('previewModal').style.display = 'flex';
     }
 
-    // 2. ดูตัวอย่างใบสั่งเข้าครัว
+    // ดูตัวอย่างใบสั่งเข้าครัว
     function openKitchenPreview() {
       if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนครับ");
       document.getElementById('modalTitle').innerText = "ตัวอย่างใบสั่งเข้าครัว";
       const box = document.getElementById('previewText');
       box.className = "receipt-content kitchen-preview";
       box.innerText = buildKitchenText();
+      
+      // ซ่อนรูป QR Code
+      document.getElementById('modalQrBox').style.display = 'none';
+
       const pBtn = document.getElementById('modalPrintBtn');
       pBtn.onclick = () => { closePreview(); printKitchenTicket(); };
       document.getElementById('previewModal').style.display = 'flex';
@@ -603,7 +625,6 @@
       document.getElementById('previewModal').style.display = 'none';
     }
 
-    // คัดลอกสรุปรายการที่รอชำระ (ตัดคำว่า ค้างชำระ ออก)
     function copyUnpaidReminder() {
       if (billItems.length === 0) return alert("ไม่มีรายการในบิลครับ");
       const unpaids = billItems.filter(i => !i.isPaid);
@@ -634,7 +655,7 @@
         t += `${idx + 1}. ${who}${item.name} x${item.qty} = ${lineTotal} บ.\n`;
       });
 
-      t += "--------------------------------\nโอนเข้าพร้อมเพย์: 080-9650875\nขอบคุณมากครับ 🙏";
+      t += "--------------------------------\nบัญชี: น.ส. ทัศนีย์ เม่นทอง (K SHOP)\nสแกนจ่ายผ่าน QR Code พร้อมเพย์\nขอบคุณมากครับ 🙏";
       navigator.clipboard.writeText(t).then(() => alert("📲 คัดลอกสรุปรายการเรียบร้อย!"));
     }
 
@@ -673,18 +694,92 @@
       }
     }
 
+    // พิมพ์บิลคิดเงิน พร้อมสร้างคำสั่งพิมพ์ QR Code ของร้าน
     async function printReceipt() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
-      const text = buildReceiptText() + "\n\n";
+      if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
+
+      const text = buildReceiptText();
       const encoder = new TextEncoder();
-      sendChunks([0x1B, 0x40, ...encoder.encode(text)]);
+      const init = [0x1B, 0x40];
+      const alignCenter = [0x1B, 0x61, 0x01];
+      const alignLeft = [0x1B, 0x61, 0x00];
+
+      let printData = [...init, ...alignLeft, ...encoder.encode(text), ...alignCenter];
+
+      // คำสั่งพิมพ์ QR Code มาตรฐาน ESC/POS
+      const qrPayloadBytes = encoder.encode(SHOP_PROMPTPAY_PAYLOAD);
+      const len = qrPayloadBytes.length + 3;
+      const pL = len % 256;
+      const pH = Math.floor(len / 256);
+
+      // 1. กำหนด Model QR Code
+      printData.push(0x1D, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00);
+      // 2. ปรับขนาด Module (ขนาด 6)
+      printData.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x06);
+      // 3. ปรับระดับ Error Correction Level M
+      printData.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31);
+      // 4. บันทึกข้อมูล
+      printData.push(0x1D, 0x28, 0x6B, pL, pH, 0x31, 0x50, 0x30, ...qrPayloadBytes);
+      // 5. สั่งพิมพ์ QR Code ออกมา
+      printData.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30);
+      // เลื่อนกระดาษ 3 บรรทัด
+      printData.push(0x0A, 0x0A, 0x0A);
+
+      sendChunks(printData);
     }
 
     async function printKitchenTicket() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
-      const text = buildKitchenText() + "\n\n";
+      if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
+
       const encoder = new TextEncoder();
-      sendChunks([0x1B, 0x40, ...encoder.encode(text)]);
+      const init = [0x1B, 0x40];
+      const doubleSize = [0x1D, 0x21, 0x11];
+      const normalSize = [0x1D, 0x21, 0x00];
+      const boldOn = [0x1B, 0x40, 0x1B, 0x45, 0x01];
+      const boldOff = [0x1B, 0x45, 0x00];
+
+      let printData = [...init];
+
+      printData.push(...boldOn, ...doubleSize);
+      printData.push(...encoder.encode("[ ใบสั่งเข้าครัว ]\n"));
+      printData.push(...normalSize, ...boldOff);
+      
+      const cust = document.getElementById('custInfo').value.trim();
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      printData.push(...encoder.encode(`เวลา: ${timeStr} น.` + (cust ? ` | ${cust}` : '') + "\n"));
+      printData.push(...encoder.encode("================================\n\n"));
+
+      billItems.forEach((item, idx) => {
+        let tagStr = "";
+        if (item.isDishOnly) tagStr += " [กับข้าว]";
+        if (item.special) tagStr += " [พิเศษ]";
+
+        printData.push(...boldOn, ...doubleSize);
+        printData.push(...encoder.encode(`#${idx + 1} ${item.name}${tagStr} x${item.qty}\n`));
+        printData.push(...normalSize, ...boldOff);
+
+        let details = [];
+        if (item.personName.trim()) details.push(item.personName.trim());
+        if (item.eggOption !== 'none') details.push(item.eggOption);
+        if (item.note.trim()) details.push(item.note.trim());
+        
+        if (details.length > 0) {
+          printData.push(...encoder.encode(`   >> ${details.join(' | ')}\n`));
+        }
+        printData.push(...encoder.encode("\n"));
+      });
+
+      const totalDishes = billItems.reduce((sum, item) => sum + item.qty, 0);
+      printData.push(...encoder.encode("================================\n"));
+      printData.push(...boldOn);
+      printData.push(...encoder.encode(`รวมทั้งหมด: ${totalDishes} รายการ\n`));
+      printData.push(...boldOff);
+      printData.push(...encoder.encode("================================\n\n\n"));
+
+      sendChunks(printData);
     }
 
     async function sendChunks(data) {
