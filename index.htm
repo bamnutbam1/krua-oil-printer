@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ครัวออยออย - บิลสั่งอาหาร</title>
+  <title>ครัวออยออย - บิลสั่งอาหาร & ใบสั่งเข้าครัว</title>
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { padding: 8px; background-color: #f1f5f9; margin: 0; color: #1e293b; }
@@ -37,7 +37,7 @@
     .chip-btn { background: #fff; border: 1px solid #cbd5e1; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 600; text-align: center; cursor: pointer; }
     .chip-btn.selected { background: #b91c1c; color: white; border-color: #b91c1c; }
     
-    .meat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+    .meat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
     .meat-btn { background: #fef2f2; border: 1px solid #fecaca; padding: 6px 2px; border-radius: 6px; font-size: 12px; font-weight: bold; text-align: center; cursor: pointer; color: #991b1b; display: flex; flex-direction: column; }
     .meat-btn:active { background: #fee2e2; }
     .meat-btn span.p { font-size: 10px; color: #b91c1c; margin-top: 2px; }
@@ -69,17 +69,22 @@
     /* ปุ่มสั่งการ */
     .btn-act { width: 100%; padding: 10px; font-size: 14px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 6px; }
     .btn-blue { background: #0284c7; color: white; padding: 6px; font-size: 12px; margin-bottom: 6px; }
-    .btn-preview { background: #f59e0b; color: white; font-size: 16px; } /* ปุ่มดูตัวอย่างบิล */
-    .btn-green { background: #16a34a; color: white; }
+    
+    /* ปุ่มหน้าครัว & ปุ่มบิล */
+    .btn-kitchen { background: #d97706; color: white; font-size: 16px; padding: 12px; } /* ปุ่มส่งเข้าครัวสีส้ม */
+    .btn-preview-kitchen { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 13px; }
+    .btn-preview { background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; font-size: 13px; }
+    .btn-green { background: #16a34a; color: white; font-size: 15px; }
     .btn-sheet { background: #059669; color: white; }
     .btn-cyan { background: #0ea5e9; color: white; }
     .btn-gray { background: #64748b; color: white; padding: 6px; font-size: 12px; }
     input.cust { width: 100%; padding: 6px 8px; font-size: 13px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 4px; }
 
-    /* หน้าต่างแสดงแบบร่าง (Modal Preview) */
+    /* Modal ดูตัวอย่างบิล */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; padding: 12px; }
     .receipt-paper { background: #fff; width: 100%; max-width: 360px; max-height: 85vh; border-radius: 8px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
     .receipt-content { font-family: monospace, sans-serif; font-size: 13px; line-height: 1.4; color: #000; overflow-y: auto; white-space: pre-wrap; background: #fafafa; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px; margin: 10px 0; }
+    .receipt-content.kitchen-preview { font-size: 15px; font-weight: bold; background: #fffbeb; border-color: #fef3c7; }
     .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   </style>
 </head>
@@ -90,7 +95,7 @@
       <h2>🍳 ครัวออยออย</h2>
       <div id="btStatus" class="status-badge">ยังไม่เชื่อมต่อ</div>
     </div>
-    <button class="btn-act btn-blue" onclick="connectPrinter()">🔌 เชื่อมต่อเครื่องพิมพ์บลูทูธ (ทำเมื่อพร้อมพิมพ์)</button>
+    <button class="btn-act btn-blue" onclick="connectPrinter()">🔌 เชื่อมต่อเครื่องพิมพ์บลูทูธ</button>
     <input type="text" id="custInfo" class="cust" placeholder="ข้อมูลหัวบิล / ชื่อกลุ่ม / ที่อยู่ส่ง">
 
     <!-- นำเข้าข้อความออเดอร์จาก LINE -->
@@ -123,11 +128,12 @@
       <div class="step-box">
         <div style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:4px;">2. เลือกเนื้อสัตว์:</div>
         <div class="meat-grid">
-          <div class="meat-btn" onclick="addCustomFast('หมู', 50)">หมู<span class="p">50.-</span></div>
+          <div class="meat-btn" onclick="addCustomFast('หมูสับ', 50)">หมูสับ<span class="p">50.-</span></div>
+          <div class="meat-btn" onclick="addCustomFast('หมูชิ้น', 50)">หมูชิ้น<span class="p">50.-</span></div>
           <div class="meat-btn" onclick="addCustomFast('ไก่', 50)">ไก่<span class="p">50.-</span></div>
+          <div class="meat-btn" onclick="addCustomFast('หมูกรอบ', 65)">หมูกรอบ<span class="p">65.-</span></div>
           <div class="meat-btn" onclick="addCustomFast('กุ้ง', 65)">กุ้ง<span class="p">65.-</span></div>
           <div class="meat-btn" onclick="addCustomFast('หมึก', 65)">หมึก<span class="p">65.-</span></div>
-          <div class="meat-btn" onclick="addCustomFast('หมูกรอบ', 65)">หมูกรอบ<span class="p">65.-</span></div>
           <div class="meat-btn" onclick="addCustomFast('ทะเล', 65)">ทะเล<span class="p">65.-</span></div>
           <div class="meat-btn" onclick="addCustomFast('เนื้อ', 60)">เนื้อ<span class="p">60.-</span></div>
           <div class="meat-btn" onclick="addCustomFast('ตับ', 55)">ตับ<span class="p">55.-</span></div>
@@ -164,25 +170,36 @@
       </div>
     </div>
 
-    <!-- ปุ่มดูแบบร่างบิล (ไม่ต้องต่อบลูทูธ) -->
-    <button class="btn-act btn-preview" onclick="openPreview()">👁️ ดูแบบร่างบิลก่อนพิมพ์</button>
-    <button class="btn-act btn-green" onclick="printReceipt()">🖨️ สั่งพิมพ์บิล (ผ่านบลูทูธ)</button>
-    <button class="btn-act btn-cyan" onclick="copyReceipt()">📋 คัดลอกบิลส่ง LINE</button>
-    <button class="btn-act btn-sheet" onclick="exportToCSV()">📊 ดาวน์โหลดไฟล์ Excel/CSV</button>
-    <button class="btn-act btn-gray" onclick="clearBill()">ล้างรายการบิล</button>
+    <!-- ส่วนที่ 1: สำหรับส่งเข้าห้องครัว (ตัวใหญ่พิเศษ) -->
+    <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:8px; margin-top:8px;">
+      <div style="font-size:12px; font-weight:bold; color:#b45309; margin-bottom:4px;">👨‍🍳 แผนกครัว (หน้าเตา):</div>
+      <button class="btn-act btn-kitchen" onclick="printKitchenTicket()">🍳 พิมพ์ใบสั่งเข้าครัว (ตัวใหญ่พิเศษ)</button>
+      <button class="btn-act btn-preview-kitchen" onclick="openKitchenPreview()">👁️ ดูแบบร่างใบครัว</button>
+    </div>
+
+    <!-- ส่วนที่ 2: สำหรับลูกค้าและคิดเงิน -->
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:8px; margin-top:8px;">
+      <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px;">🧾 แผนกคิดเงิน / ลูกค้า:</div>
+      <button class="btn-act btn-green" onclick="printReceipt()">🖨️ พิมพ์บิลคิดเงินลูกค้า</button>
+      <button class="btn-act btn-preview" onclick="openPreview()">👁️ ดูแบบร่างบิลคิดเงิน</button>
+      <button class="btn-act btn-cyan" onclick="copyReceipt()">📋 คัดลอกบิลส่ง LINE</button>
+      <button class="btn-act btn-sheet" onclick="exportToCSV()">📊 ดาวน์โหลด Excel/CSV</button>
+    </div>
+
+    <button class="btn-act btn-gray" onclick="clearBill()" style="margin-top:10px;">ล้างรายการทั้งหมด</button>
   </div>
 
-  <!-- หน้าต่างจำลองกระดาษสลิปบิลจริง (Modal) -->
+  <!-- Modal ดูตัวอย่างบิล -->
   <div id="previewModal" class="modal-overlay">
     <div class="receipt-paper">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <strong style="font-size:15px; color:#b91c1c;">ตัวอย่างกระดาษบิลจริง</strong>
+        <strong id="modalTitle" style="font-size:15px; color:#b91c1c;">ตัวอย่างสลิป</strong>
         <span style="font-size:11px; color:#666;">(ยังไม่ต้องต่อบลูทูธ)</span>
       </div>
       <div id="previewText" class="receipt-content"></div>
       <div class="modal-btns">
         <button class="btn-act btn-gray" style="margin-top:0;" onclick="closePreview()">ปิดหน้าต่าง</button>
-        <button class="btn-act btn-green" style="margin-top:0;" onclick="printReceiptFromModal()">🖨️ สั่งพิมพ์</button>
+        <button id="modalPrintBtn" class="btn-act btn-green" style="margin-top:0;">🖨️ สั่งพิมพ์</button>
       </div>
     </div>
   </div>
@@ -190,14 +207,15 @@
   <script>
     const recList = [
       { name: "กะเพราหมูกรอบ", p: 65 }, { name: "กะเพราหมูสับ", p: 50 },
-      { name: "กะเพราไก่", p: 50 }, { name: "กะเพรากุ้ง", p: 65 },
-      { name: "กะเพราหมึก", p: 65 }, { name: "กะเพราทะเล", p: 65 }, 
-      { name: "กะเพราเนื้อ", p: 60 }, { name: "หมูกรอบคั่วพริกเกลือ", p: 65 }, 
-      { name: "ผัดผงกะหรี่กุ้ง", p: 65 }, { name: "ผัดผงกะหรี่ทะเล", p: 65 }, 
-      { name: "ผัดผงกะหรี่ หมู/ไก่", p: 55 }, { name: "ข้าวผัดหมู", p: 50 },
-      { name: "ข้าวผัดกุ้ง", p: 65 }, { name: "ข้าวผัดหมูกรอบ", p: 65 }, 
-      { name: "ผัดแตงกวาใส่ไข่", p: 50 }, { name: "ผัดบวบหมูสับใส่ไข่", p: 50 },
-      { name: "สุกี้ (น้ำ/แห้ง)", p: 55 }, { name: "ต้มยำ (รวมข้าว)", p: 60 }
+      { name: "กะเพราหมูชิ้น", p: 50 }, { name: "กะเพราไก่", p: 50 },
+      { name: "กะเพรากุ้ง", p: 65 }, { name: "กะเพราหมึก", p: 65 },
+      { name: "กะเพราทะเล", p: 65 }, { name: "กะเพราเนื้อ", p: 60 },
+      { name: "หมูกรอบคั่วพริกเกลือ", p: 65 }, { name: "ผัดผงกะหรี่กุ้ง", p: 65 },
+      { name: "ผัดผงกะหรี่ทะเล", p: 65 }, { name: "ผัดผงกะหรี่ หมู/ไก่", p: 55 },
+      { name: "ข้าวผัดหมู", p: 50 }, { name: "ข้าวผัดกุ้ง", p: 65 },
+      { name: "ข้าวผัดหมูกรอบ", p: 65 }, { name: "ผัดแตงกวาใส่ไข่", p: 50 },
+      { name: "ผัดบวบหมูสับใส่ไข่", p: 50 }, { name: "สุกี้ (น้ำ/แห้ง)", p: 55 },
+      { name: "ต้มยำ (รวมข้าว)", p: 60 }
     ];
 
     let selectedCookingType = "ผัดกะเพรา";
@@ -266,6 +284,15 @@
         if (line.includes("ไข่ดาว 2")) { 
           egg = "เพิ่มไข่ดาว"; 
           line = line.replace(/ไข่ดาว\s*2\s*ฟอง|ไข่ดาว\s*2/g, ""); 
+        } else if (line.includes("เพิ่มไข่ดาว")) {
+          egg = "เพิ่มไข่ดาว";
+          line = line.replace(/\+?\s*เพิ่มไข่ดาว/g, "");
+        } else if (line.includes("เพิ่มไข่เจียว") || line.includes("ไข่เจียว 2")) {
+          egg = "เพิ่มไข่เจียว";
+          line = line.replace(/ไข่เจียว\s*2\s*ฟอง|ไข่เจียว\s*2|\+?\s*เพิ่มไข่เจียว/g, "");
+        } else if (line.includes("เพิ่มไข่ข้น") || line.includes("ไข่ข้น")) {
+          egg = "เพิ่มไข่ข้น";
+          line = line.replace(/\+?\s*เพิ่มไข่ข้น|\+?\s*ไข่ข้น/g, "");
         } else if (line.includes("ไข่ดาว")) { 
           egg = "ไข่ดาว"; 
           line = line.replace(/\+?\s*ไข่ดาว/g, ""); 
@@ -322,49 +349,40 @@
       renderBill();
     }
 
-    function updateItemName(idx, val) {
-      billItems[idx].name = val;
-    }
-
+    function updateItemName(idx, val) { billItems[idx].name = val; }
     function setEgg(idx, option) {
       billItems[idx].eggOption = billItems[idx].eggOption === option ? 'none' : option;
       renderBill();
     }
-
     function updateExtraEggPrice(idx, val) {
       const p = parseFloat(val);
       billItems[idx].extraEggPrice = isNaN(p) ? 10 : p;
       updateTotals();
     }
-
     function toggleDishOnly(idx) {
       billItems[idx].isDishOnly = !billItems[idx].isDishOnly;
       renderBill();
     }
-
     function updateDishPrice(idx, val) {
       billItems[idx].dishPrice = parseFloat(val) || 0;
       updateTotals();
     }
-
     function toggleSpecial(idx) {
       billItems[idx].special = !billItems[idx].special;
       renderBill();
     }
-
     function changeQty(idx, delta) {
       billItems[idx].qty += delta;
       if (billItems[idx].qty <= 0) billItems.splice(idx, 1);
       renderBill();
     }
-
     function updatePerson(idx, val) { billItems[idx].personName = val; }
     function updateNote(idx, val) { billItems[idx].note = val; }
 
     function getItemUnitPrice(item) {
       let base = item.isDishOnly ? item.dishPrice : item.price;
       if (item.special) base += 10;
-      if (item.eggOption === 'เพิ่มไข่ดาว') {
+      if (['เพิ่มไข่ดาว', 'เพิ่มไข่เจียว', 'เพิ่มไข่ข้น'].includes(item.eggOption)) {
         base += (typeof item.extraEggPrice === 'number' ? item.extraEggPrice : 10);
       }
       return base;
@@ -405,6 +423,7 @@
       billItems.forEach((item, idx) => {
         const unitPrice = getItemUnitPrice(item);
         const lineTotal = unitPrice * item.qty;
+        const isExtraEgg = ['เพิ่มไข่ดาว', 'เพิ่มไข่เจียว', 'เพิ่มไข่ข้น'].includes(item.eggOption);
 
         html += `
           <div class="bill-item">
@@ -419,7 +438,9 @@
               <span class="pill ${item.eggOption === 'ไข่ดาว' ? 'active' : ''}" onclick="setEgg(${idx}, 'ไข่ดาว')">+ ไข่ดาว</span>
               <span class="pill ${item.eggOption === 'ไข่เจียว' ? 'active' : ''}" onclick="setEgg(${idx}, 'ไข่เจียว')">+ ไข่เจียว</span>
               <span class="pill ${item.eggOption === 'เพิ่มไข่ดาว' ? 'active' : ''}" onclick="setEgg(${idx}, 'เพิ่มไข่ดาว')">+ เพิ่มไข่ดาว</span>
-              ${item.eggOption === 'เพิ่มไข่ดาว' ? `
+              <span class="pill ${item.eggOption === 'เพิ่มไข่เจียว' ? 'active' : ''}" onclick="setEgg(${idx}, 'เพิ่มไข่เจียว')">+ เพิ่มไข่เจียว</span>
+              <span class="pill ${item.eggOption === 'เพิ่มไข่ข้น' ? 'active' : ''}" onclick="setEgg(${idx}, 'เพิ่มไข่ข้น')">+ เพิ่มไข่ข้น</span>
+              ${isExtraEgg ? `
                 <input type="number" class="price-input" value="${item.extraEggPrice !== undefined ? item.extraEggPrice : 10}" 
                        oninput="updateExtraEggPrice(${idx}, this.value)">
                 <span style="font-size:10px; color:#666;">บ.</span>
@@ -456,6 +477,7 @@
       grandTotalEl.innerText = `${calculateTotal()} ฿`;
     }
 
+    // 1. ข้อความบิลคิดเงินลูกค้า
     function buildReceiptText() {
       const cust = document.getElementById('custInfo').value.trim();
       const now = new Date();
@@ -482,9 +504,9 @@
         if (item.personName.trim()) details.push(item.personName.trim());
         if (item.eggOption === 'ไข่ดาว') details.push("ไข่ดาว");
         if (item.eggOption === 'ไข่เจียว') details.push("ไข่เจียว");
-        if (item.eggOption === 'เพิ่มไข่ดาว') {
+        if (['เพิ่มไข่ดาว', 'เพิ่มไข่เจียว', 'เพิ่มไข่ข้น'].includes(item.eggOption)) {
           const ep = item.extraEggPrice !== undefined ? item.extraEggPrice : 10;
-          details.push(`เพิ่มไข่ดาว (+${ep})`);
+          details.push(`${item.eggOption} (+${ep})`);
         }
         if (item.note.trim()) details.push(item.note.trim());
         
@@ -498,10 +520,63 @@
       return t;
     }
 
-    // 1. ฟังก์ชันเปิดดูแบบร่างสลิป (ไม่ต้องต่อบลูทูธ)
+    // 2. ข้อความใบสั่งเข้าห้องครัว (ตัวใหญ่ ไม่แสดงราคา เน้นคนทำอ่านง่าย)
+    function buildKitchenText() {
+      const cust = document.getElementById('custInfo').value.trim();
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      
+      let t = "================================\n";
+      t += "       [ ใบสั่งเข้าครัว ]       \n";
+      t += `เวลา: ${timeStr} น.`;
+      if (cust) t += ` | ${cust}`;
+      t += "\n================================\n\n";
+
+      billItems.forEach((item, idx) => {
+        let tagStr = "";
+        if (item.isDishOnly) tagStr += " [กับข้าว]";
+        if (item.special) tagStr += " [พิเศษ]";
+
+        t += `#${idx + 1} ${item.name}${tagStr}  [x${item.qty}]\n`;
+        
+        let details = [];
+        if (item.personName.trim()) details.push(item.personName.trim());
+        if (item.eggOption !== 'none') details.push(item.eggOption);
+        if (item.note.trim()) details.push(item.note.trim());
+        
+        if (details.length > 0) {
+          t += `   >> ${details.join(' | ')}\n`;
+        }
+        t += "\n";
+      });
+
+      const totalDishes = billItems.reduce((sum, item) => sum + item.qty, 0);
+      t += "================================\n";
+      t += `        รวมทั้งหมด: ${totalDishes} รายการ\n`;
+      t += "================================\n";
+      return t;
+    }
+
+    // Modal Preview สลับได้ระหว่างบิลลูกค้า และใบครัว
     function openPreview() {
-      if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนดูแบบร่างครับ");
-      document.getElementById('previewText').innerText = buildReceiptText();
+      if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนครับ");
+      document.getElementById('modalTitle').innerText = "ตัวอย่างบิลคิดเงินลูกค้า";
+      const box = document.getElementById('previewText');
+      box.className = "receipt-content";
+      box.innerText = buildReceiptText();
+      const pBtn = document.getElementById('modalPrintBtn');
+      pBtn.onclick = () => { closePreview(); printReceipt(); };
+      document.getElementById('previewModal').style.display = 'flex';
+    }
+
+    function openKitchenPreview() {
+      if (billItems.length === 0) return alert("กรุณาเพิ่มรายการอาหารก่อนครับ");
+      document.getElementById('modalTitle').innerText = "ตัวอย่างใบสั่งเข้าครัว (ตัวใหญ่)";
+      const box = document.getElementById('previewText');
+      box.className = "receipt-content kitchen-preview";
+      box.innerText = buildKitchenText();
+      const pBtn = document.getElementById('modalPrintBtn');
+      pBtn.onclick = () => { closePreview(); printKitchenTicket(); };
       document.getElementById('previewModal').style.display = 'flex';
     }
 
@@ -509,12 +584,7 @@
       document.getElementById('previewModal').style.display = 'none';
     }
 
-    function printReceiptFromModal() {
-      closePreview();
-      printReceipt();
-    }
-
-    // 2. ฟังก์ชันบลูทูธ ESC/POS
+    // บลูทูธ
     async function connectPrinter() {
       try {
         const device = await navigator.bluetooth.requestDevice({
@@ -540,18 +610,78 @@
       }
     }
 
+    // พิมพ์บิลลูกค้าปกติ
     async function printReceipt() {
-      if (!printCharacteristic) {
-        return alert("ยังไม่ได้เชื่อมต่อเครื่องพิมพ์! กรุณากดปุ่มสีฟ้า 'เชื่อมต่อเครื่องพิมพ์บลูทูธ' ด้านบนก่อนครับ");
-      }
+      if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
       if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
 
       const text = buildReceiptText() + "\n\n";
       const encoder = new TextEncoder();
-      const initPrinter = [0x1B, 0x40];
-      const data = [...initPrinter, ...encoder.encode(text)];
-      const dataArray = new Uint8Array(data);
+      const init = [0x1B, 0x40];
+      const data = [...init, ...encoder.encode(text)];
+      sendChunks(data);
+    }
 
+    // พิมพ์ใบสั่งเข้าครัว (ใช้รหัสคำสั่ง ESC/POS ขยายตัวอักษรใหญ่ หนา 2 เท่า)
+    async function printKitchenTicket() {
+      if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
+      if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
+
+      const encoder = new TextEncoder();
+      const init = [0x1B, 0x40];                     // รีเซ็ตเครื่องพิมพ์
+      const doubleSize = [0x1D, 0x21, 0x11];         // ขยาย กว้างx2 สูงx2
+      const normalSize = [0x1D, 0x21, 0x00];         // ขนาดปกติ
+      const boldOn = [0x1B, 0x45, 0x01];             // เปิดตัวหนา
+      const boldOff = [0x1B, 0x45, 0x00];            // ปิดตัวหนา
+
+      let printData = [...init];
+
+      // หัวกระดาษเข้าครัว
+      printData.push(...boldOn, ...doubleSize);
+      printData.push(...encoder.encode("[ ใบสั่งเข้าครัว ]\n"));
+      printData.push(...normalSize, ...boldOff);
+      
+      const cust = document.getElementById('custInfo').value.trim();
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      printData.push(...encoder.encode(`เวลา: ${timeStr} น.` + (cust ? ` | ${cust}` : '') + "\n"));
+      printData.push(...encoder.encode("================================\n\n"));
+
+      // แต่ละรายการอาหาร (ขยายตัวใหญ่เฉพาะชื่อเมนูและจำนวน)
+      billItems.forEach((item, idx) => {
+        let tagStr = "";
+        if (item.isDishOnly) tagStr += " [กับข้าว]";
+        if (item.special) tagStr += " [พิเศษ]";
+
+        // บรรทัดชื่อเมนู: ตัวหนา + ตัวใหญ่ 2 เท่า
+        printData.push(...boldOn, ...doubleSize);
+        printData.push(...encoder.encode(`#${idx + 1} ${item.name}${tagStr} x${item.qty}\n`));
+        printData.push(...normalSize, ...boldOff);
+
+        // บรรทัดรายละเอียดคนทาน/ไข่/เผ็ด: ขนาดปกติ
+        let details = [];
+        if (item.personName.trim()) details.push(item.personName.trim());
+        if (item.eggOption !== 'none') details.push(item.eggOption);
+        if (item.note.trim()) details.push(item.note.trim());
+        
+        if (details.length > 0) {
+          printData.push(...encoder.encode(`   >> ${details.join(' | ')}\n`));
+        }
+        printData.push(...encoder.encode("\n"));
+      });
+
+      const totalDishes = billItems.reduce((sum, item) => sum + item.qty, 0);
+      printData.push(...encoder.encode("================================\n"));
+      printData.push(...boldOn);
+      printData.push(...encoder.encode(`รวมทั้งหมด: ${totalDishes} รายการ\n`));
+      printData.push(...boldOff);
+      printData.push(...encoder.encode("================================\n\n\n"));
+
+      sendChunks(printData);
+    }
+
+    async function sendChunks(data) {
+      const dataArray = new Uint8Array(data);
       for (let i = 0; i < dataArray.length; i += 100) {
         await printCharacteristic.writeValue(dataArray.slice(i, i + 100));
       }
@@ -560,7 +690,7 @@
     function copyReceipt() {
       if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนคัดลอก");
       navigator.clipboard.writeText(buildReceiptText()).then(() => {
-        alert("คัดลอกบิลเรียบร้อย! นำไปวางส่งในแชต LINE ได้ทันที");
+        alert("คัดลอกบิลคิดเงินเรียบร้อย! นำไปวางส่งใน LINE ได้ทันที");
       });
     }
 
@@ -574,8 +704,8 @@
         const unitPrice = getItemUnitPrice(item);
         const lineTotal = unitPrice * item.qty;
         let egg = item.eggOption === 'none' ? '-' : item.eggOption;
-        if (item.eggOption === 'เพิ่มไข่ดาว') {
-          egg = `เพิ่มไข่ดาว (+${item.extraEggPrice})`;
+        if (['เพิ่มไข่ดาว', 'เพิ่มไข่เจียว', 'เพิ่มไข่ข้น'].includes(item.eggOption)) {
+          egg = `${item.eggOption} (+${item.extraEggPrice})`;
         }
         csvContent += `${idx + 1},"${dateStr}","${item.name}",${item.qty},${unitPrice},${lineTotal},"${item.personName}","${egg}","${item.note}"\n`;
       });
