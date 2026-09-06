@@ -15,19 +15,19 @@
     .status-badge { padding: 4px 10px; border-radius: 12px; background: #e2e8f0; font-size: 11px; font-weight: bold; }
     .status-badge.connected { background: #dcfce7; color: #166534; }
 
-    /* แท็บสลับ 3 หมวดหมู่หลัก */
+    /* แท็บหมวดหมู่ */
     .nav-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
     .nav-tab { flex: 1; padding: 8px 4px; text-align: center; background: #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: bold; border: none; cursor: pointer; color: #475569; }
     .nav-tab.active { background: #b91c1c; color: white; }
 
-    /* สไตล์ปุ่มเมนูแนะนำและเมนูอื่นๆ */
+    /* เมนูแนะนำ & เมนูอื่นๆ */
     .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 280px; overflow-y: auto; }
     .btn-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
     .btn-card:active { background: #fee2e2; }
     .btn-card .name { font-size: 13px; font-weight: 600; line-height: 1.2; }
     .btn-card .price { font-size: 12px; color: #b91c1c; font-weight: bold; }
 
-    /* ส่วนอาหารจานด่วน */
+    /* จานด่วน */
     .step-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-bottom: 8px; }
     .step-title { font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 6px; }
     .chips-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
@@ -39,15 +39,18 @@
     .meat-btn:active { background: #fee2e2; }
     .meat-btn span.p { font-size: 11px; color: #b91c1c; }
 
-    /* บิลเรียกเก็บเงิน */
+    /* บิลรายการ */
     .bill-box { border: 2px dashed #cbd5e1; border-radius: 10px; padding: 8px; background: #fff; margin-top: 8px; }
     .bill-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 8px; }
     .bill-item-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; }
     
-    .pill-group { display: flex; gap: 4px; margin: 4px 0; flex-wrap: wrap; }
+    .pill-group { display: flex; gap: 4px; margin: 4px 0; flex-wrap: wrap; align-items: center; }
     .pill { font-size: 11px; padding: 3px 6px; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; }
     .pill.active { background: #fef08a; border-color: #eab308; font-weight: bold; color: #854d0e; }
     .pill.active-opt { background: #fee2e2; border-color: #f87171; font-weight: bold; color: #991b1b; }
+
+    /* ช่องกรอกราคากับข้าว */
+    .dish-price-input { width: 65px; padding: 3px 4px; font-size: 11px; font-weight: bold; border-radius: 4px; border: 1px solid #f87171; color: #b91c1c; text-align: center; background: #fff5f5; }
 
     .bill-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
     .qty-ctrl { display: flex; align-items: center; gap: 6px; }
@@ -148,7 +151,7 @@
       </div>
     </div>
 
-    <!-- แผงบิลเรียกเก็บเงิน -->
+    <!-- บิลแจ้งรายการ -->
     <div class="bill-box">
       <div style="font-weight:bold; font-size:13px; border-bottom:1px solid #f1f5f9; padding-bottom:4px; margin-bottom:6px;">
         📋 รายการอาหารในบิล:
@@ -215,15 +218,16 @@
       addDirect(fullName, price);
     }
 
-    // เพิ่มรายการลงบิล (ค่าเริ่มต้น: ไม่เอาไข่ และไม่ใช่กับข้าว)
+    // เพิ่มรายการลงบิล
     function addDirect(name, price) {
       billItems.push({
         id: Date.now() + Math.random(),
         name: name,
-        price: price,
+        price: price,             // ราคาปกติ
+        dishPrice: 80,            // ราคากับข้าวเริ่มต้น (สามารถแก้ไขได้ในบิล)
         qty: 1,
-        eggOption: 'none', // none, 'ดาวฟรี', 'เจียวฟรี', 'ดาว2ฟอง', 'เจียว2ฟอง'
-        isDishOnly: false, // เป็นกับข้าวหรือไม่
+        eggOption: 'none',
+        isDishOnly: false,        // เลือกว่าเป็นกับข้าวหรือไม่
         special: false,
         note: ''
       });
@@ -238,6 +242,16 @@
     function toggleDishOnly(idx) {
       billItems[idx].isDishOnly = !billItems[idx].isDishOnly;
       renderBill();
+    }
+
+    function updateDishPrice(idx, val) {
+      const p = parseFloat(val) || 0;
+      billItems[idx].dishPrice = p;
+      // อัปเดตยอดรวมทันทีโดยไม่ต้องเรนเดอร์ใหม่เพื่อไม่ให้ช่องกรอกหลุดโฟกัส
+      document.getElementById('grandTotal').innerText = `${calculateTotal()} ฿`;
+      const unitPrice = getItemUnitPrice(billItems[idx]);
+      document.getElementById(`lineTotal-${idx}`).innerText = `${unitPrice * billItems[idx].qty} ฿`;
+      document.getElementById(`unitPrice-${idx}`).innerText = `@${unitPrice}฿`;
     }
 
     function toggleSpecial(idx) {
@@ -255,13 +269,12 @@
       billItems[idx].note = text;
     }
 
-    // คำนวณราคาต่อจาน:
-    // ราคาอาหาร + สั่งพิเศษ (+10) + ไข่ดาว 2 ฟอง คิดเงินฟองที่สอง (+10)
+    // คำนวณราคาต่อหน่วย: ถ้าเป็นกับข้าวให้ใช้ dishPrice แทน price ปกติ
     function getItemUnitPrice(item) {
-      let p = item.price;
-      if (item.special) p += 10;
-      if (item.eggOption === 'ดาว2ฟอง' || item.eggOption === 'เจียว2ฟอง') p += 10;
-      return p;
+      let base = item.isDishOnly ? item.dishPrice : item.price;
+      if (item.special) base += 10;
+      if (item.eggOption === 'ดาว2ฟอง' || item.eggOption === 'เจียว2ฟอง') base += 10;
+      return base;
     }
 
     function calculateTotal() {
@@ -297,10 +310,10 @@
                 ${item.isDishOnly ? '<b style="color:#b91c1c;">(กับข้าว)</b>' : ''}
                 ${item.special ? '<span style="color:#b91c1c;">(พิเศษ)</span>' : ''}
               </span>
-              <span>${lineTotal} ฿</span>
+              <span id="lineTotal-${idx}">${lineTotal} ฿</span>
             </div>
 
-            <!-- ตัวเลือกไข่ (ฟรี 1 ฟอง / คิดเงินเฉพาะฟองที่ 2) -->
+            <!-- ตัวเลือกไข่ -->
             <div class="pill-group">
               <span class="pill ${item.eggOption === 'ดาวฟรี' ? 'active' : ''}" onclick="setEgg(${idx}, 'ดาวฟรี')">+ ไข่ดาวฟรี</span>
               <span class="pill ${item.eggOption === 'เจียวฟรี' ? 'active' : ''}" onclick="setEgg(${idx}, 'เจียวฟรี')">+ ไข่เจียวฟรี</span>
@@ -308,14 +321,20 @@
               <span class="pill ${item.eggOption === 'เจียว2ฟอง' ? 'active' : ''}" onclick="setEgg(${idx}, 'เจียว2ฟอง')">+ ไข่เจียว 2 ฟอง (+10)</span>
             </div>
 
-            <!-- ตัวเลือกกับข้าว & สั่งพิเศษ -->
+            <!-- ตัวเลือกกับข้าว (มีช่องใส่ราคา) & สั่งพิเศษ -->
             <div class="pill-group">
               <span class="pill ${item.isDishOnly ? 'active-opt' : ''}" onclick="toggleDishOnly(${idx})">🍲 เป็นกับข้าว</span>
+              ${item.isDishOnly ? `
+                <span style="font-size:11px; font-weight:bold; color:#b91c1c;">ระบุราคา:</span>
+                <input type="number" class="dish-price-input" value="${item.dishPrice}" 
+                       oninput="updateDishPrice(${idx}, this.value)">
+                <span style="font-size:11px; color:#666;">บ.</span>
+              ` : ''}
               <span class="pill ${item.special ? 'active-opt' : ''}" onclick="toggleSpecial(${idx})">+ สั่งพิเศษ (+10)</span>
             </div>
 
             <div class="bill-actions">
-              <span style="font-size:12px; color:#64748b;">@${unitPrice}฿</span>
+              <span id="unitPrice-${idx}" style="font-size:12px; color:#64748b;">@${unitPrice}฿</span>
               <div class="qty-ctrl">
                 <button class="qty-b" onclick="changeQty(${idx}, -1)">-</button>
                 <span style="font-size:13px; font-weight:bold; min-width:16px; text-align:center;">${item.qty}</span>
@@ -348,7 +367,7 @@
         const lineTotal = unitPrice * item.qty;
         
         let tags = [];
-        if (item.isDishOnly) tags.push("กับข้าว");
+        if (item.isDishOnly) tags.push(`กับข้าว ${item.dishPrice}บ.`);
         if (item.special) tags.push("พิเศษ");
         const tagStr = tags.length > 0 ? ` (${tags.join(', ')})` : '';
 
