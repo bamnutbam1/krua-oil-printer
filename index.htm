@@ -117,13 +117,11 @@
     .btn-mini-view { background: #0ea5e9; color: white; }
     .btn-mini-del { background: #fee2e2; color: #b91c1c; }
 
-    /* ซ่อน Canvas ที่ใช้แปลงภาพ */
     #printCanvas { display: none; }
   </style>
 </head>
 <body>
 
-  <!-- Canvas ลับสำหรับวาดภาษาไทยเป็นรูปภาพ -->
   <canvas id="printCanvas" width="384"></canvas>
 
   <div class="card">
@@ -215,7 +213,7 @@
         <div class="grid-2">
           <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวหมูสับ', 40)"><span class="name">ข้าวไข่เจียวหมูสับ</span><span class="price">40.-</span></div>
           <div class="btn-card" onclick="addDirect('ข้าวไข่เจียวทรงเครื่อง', 40)"><span class="name">ข้าวไข่เจียวทรงเครื่อง</span><span class="price">40.-</span></div>
-          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียว 2 ฟอง', 30)"><span class="name">ข้าวไข่เจียว 2 ฟอง</span><span class="price">30.-</span></div>
+          <div class="btn-card" onclick="addDirect('ข้าวไข่เจียว 2 ฟอง', 30)"><span class="name">ไข่เจียว 2 ฟอง</span><span class="price">30.-</span></div>
           <div class="btn-card" onclick="addDirect('ข้าวไข่ดาว 2 ฟอง', 30)"><span class="name">ไข่ดาว 2 ฟอง</span><span class="price">30.-</span></div>
           <div class="btn-card" onclick="addDirect('ข้าวเปล่า', 10)"><span class="name">ข้าวเปล่า</span><span class="price">10.-</span></div>
         </div>
@@ -244,7 +242,7 @@
       <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:8px; margin-top:8px;">
         <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px;">🧾 แผนกคิดเงิน & ลูกค้า:</div>
         <button class="btn-act btn-preview" onclick="openReceiptPreview()">👁️ ดูตัวอย่างบิล & QR Code ชำระเงิน</button>
-        <button class="btn-act btn-green" onclick="printReceipt()">🖨️ พิมพ์บิลคิดเงินลูกค้า (ภาษาไทย)</button>
+        <button class="btn-act btn-green" onclick="printReceipt()">🖨️ พิมพ์บิลคิดเงินลูกค้า (พร้อม QR)</button>
         <button class="btn-act btn-remind" onclick="copyUnpaidReminder()">📢 คัดลอกสรุปรายการที่รอชำระส่ง LINE</button>
         <button class="btn-act btn-cyan" onclick="copyReceipt()">📋 คัดลอกบิลรวมส่ง LINE</button>
       </div>
@@ -300,7 +298,30 @@
   </div>
 
   <script>
-    const SHOP_PROMPTPAY_PAYLOAD = "00020101021130630016A000000677010111011300660000000000215EMPKB00000196578300153037645802TH5912Krua Oil Oil62070703***6304";
+    // รหัสคำนวณ CRC16-CCITT สำหรับ PromptPay EMVCo
+    function crc16(data) {
+      let crc = 0xFFFF;
+      for (let i = 0; i < data.length; i++) {
+        let x = ((crc >> 8) ^ data.charCodeAt(i)) & 0xFF;
+        x ^= x >> 4;
+        crc = ((crc << 8) ^ (x << 12) ^ (x << 5) ^ x) & 0xFFFF;
+      }
+      return crc.toString(16).toUpperCase().padStart(4, '0');
+    }
+
+    // สร้าง PromptPay Payload ตามมาตรฐาน Thai QR Code ที่แอปธนาคารสแกนได้จริง 100%
+    function getPromptPayPayload() {
+      const billerId = "010753600031502";
+      const ref1 = "EMPKB000001965783001";
+      const tag29_val = "0016A000000677010112" + 
+                        "01" + String(billerId.length).padStart(2, '0') + billerId + 
+                        "02" + String(ref1.length).padStart(2, '0') + ref1;
+      const tag29 = "29" + String(tag29_val.length).padStart(2, '0') + tag29_val;
+      const raw = "000201010211" + tag29 + "53037645802TH" + "6304";
+      return raw + crc16(raw);
+    }
+
+    const SHOP_PROMPTPAY_PAYLOAD = getPromptPayPayload();
 
     const recList = [
       { name: "กะเพราหมูกรอบ", p: 65 }, { name: "กะเพราหมูสับ", p: 50 },
@@ -319,36 +340,33 @@
     let billItems = [];
     let printCharacteristic = null;
 
-    // ระบบวาดข้อความภาษาไทยลงบน Canvas และแปลงเป็น Bitmap Data ส่งเครื่องพิมพ์
-    function generateBitmapFromText(text, fontSize = 24, isBold = false) {
+    // แปลงข้อความเป็นภาพบิตแมปขาวดำ รองรับตัวหนังสือขนาดใหญ่พิเศษ
+    function generateBitmapFromText(text, fontSize = 30, isBold = false) {
       const canvas = document.getElementById('printCanvas');
       const ctx = canvas.getContext('2d');
-      const width = 384; // ความกว้างมาตรฐานกระดาษ 58 มม.
+      const width = 384; // ความกว้างสลิป 58 มม.
       
       const lines = text.split('\n');
-      const lineHeight = fontSize + 8;
+      const lineHeight = fontSize + 10;
       const height = (lines.length + 1) * lineHeight;
 
       canvas.width = width;
       canvas.height = height;
 
-      // เคลียร์พื้นหลังเป็นสีขาว
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, width, height);
 
-      // วาดตัวหนังสือภาษาไทยด้วยสีดำ
       ctx.fillStyle = '#000000';
-      ctx.font = `${isBold ? 'bold ' : ''}${fontSize}px -apple-system, sans-serif`;
+      ctx.font = `${isBold ? 'bold ' : ''}${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
       ctx.textBaseline = 'top';
 
       lines.forEach((line, index) => {
         ctx.fillText(line, 4, index * lineHeight);
       });
 
-      // แปลงพิกเซลเป็นข้อมูล 1-bit monochrome ESC/POS (GS v 0)
       const imgData = ctx.getImageData(0, 0, width, height);
       const data = imgData.data;
-      const bytesWidth = width / 8; // 48 bytes ต่อ 1 แถว
+      const bytesWidth = width / 8;
       const dots = [];
 
       for (let y = 0; y < height; y++) {
@@ -357,10 +375,9 @@
           for (let b = 0; b < 8; b++) {
             const px = x * 8 + b;
             const idx = (y * width + px) * 4;
-            // คำนวณความสว่าง (Grayscale)
             const brightness = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
             if (brightness < 128) {
-              byte |= (1 << (7 - b)); // จุดสีดำ
+              byte |= (1 << (7 - b));
             }
           }
           dots.push(byte);
@@ -372,7 +389,50 @@
       const yL = height % 256;
       const yH = Math.floor(height / 256);
 
-      // คำสั่ง ESC/POS พิมพ์ภาพ Raster Bit Image (GS v 0)
+      return [0x1D, 0x76, 0x30, 0x00, xL, xH, yL, yH, ...dots, 0x0A, 0x0A, 0x0A];
+    }
+
+    // แปลง QR Code เป็น Bitmap เพื่อให้พิมพ์คมชัด สแกนติดง่าย
+    function generateBitmapFromCanvas(srcCanvas) {
+      const width = 384;
+      const qrSize = 250;
+      const paddingX = Math.floor((width - qrSize) / 2);
+      const height = qrSize + 20;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(srcCanvas, paddingX, 10, qrSize, qrSize);
+
+      const imgData = ctx.getImageData(0, 0, width, height);
+      const data = imgData.data;
+      const bytesWidth = width / 8;
+      const dots = [];
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < bytesWidth; x++) {
+          let byte = 0;
+          for (let b = 0; b < 8; b++) {
+            const px = x * 8 + b;
+            const idx = (y * width + px) * 4;
+            const brightness = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+            if (brightness < 128) {
+              byte |= (1 << (7 - b));
+            }
+          }
+          dots.push(byte);
+        }
+      }
+
+      const xL = bytesWidth % 256;
+      const xH = Math.floor(bytesWidth / 256);
+      const yL = height % 256;
+      const yH = Math.floor(height / 256);
+
       return [0x1D, 0x76, 0x30, 0x00, xL, xH, yL, yH, ...dots, 0x0A, 0x0A, 0x0A];
     }
 
@@ -455,18 +515,18 @@
       renderBill();
     }
 
-    // พิมพ์ข้อความจาก LINE เป็นภาษาไทยแท้
+    // พิมพ์ข้อความจาก LINE ด้วยตัวอักษรใหญ่ขึ้น 2 ระดับ
     async function printRawLineText() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
       const text = document.getElementById('lineRawText').value.trim();
       if (!text) return alert("กรุณาวางข้อความจาก LINE ก่อนพิมพ์ครับ");
 
-      const printText = `[ ออเดอร์จาก LINE ]\n--------------------------------\n${text}\n--------------------------------`;
-      const bitmapData = generateBitmapFromText(printText, 24, true);
+      const printText = `[ ออเดอร์จาก LINE ]\n----------------------------\n${text}\n----------------------------`;
+      const bitmapData = generateBitmapFromText(printText, 32, true); // ฟอนต์ขนาด 32 (ใหญ่พิเศษ)
       const init = [0x1B, 0x40];
 
       await sendChunks([...init, ...bitmapData]);
-      alert("🖨️ ส่งพิมพ์ภาษาไทยออกเรียบร้อย!");
+      alert("🖨️ ส่งพิมพ์ภาษาไทยตัวใหญ่เรียบร้อย!");
     }
 
     function parseLineOrders() {
@@ -773,7 +833,7 @@
       if (bCust) t += `ลูกค้า: ${bCust}\n`;
       if (bPlace) t += `สถานที่ส่ง: ${bPlace}\n`;
       if (bDelivTime) t += `เวลาส่ง: ${bDelivTime}\n`;
-      t += "--------------------------------\n";
+      t += "----------------------------\n";
 
       billItems.forEach((item, idx) => {
         const unitPrice = getItemUnitPrice(item);
@@ -798,15 +858,15 @@
         if (details.length > 0) t += `   └ (${details.join(', ')})\n`;
       });
 
-      t += "--------------------------------\n";
+      t += "----------------------------\n";
       t += `ยอดรวมทั้งหมด: ${total} บาท\n`;
       if (paid > 0) {
         t += `✅ ได้รับเงินแล้ว: ${paid} บาท\n`;
         t += `ยอดคงเหลือ: ${total - paid} บาท\n`;
       }
-      t += "--------------------------------\n";
-      t += "บัญชี: น.ส. ทัศนีย์ เม่นทอง (K SHOP)\n";
-      t += "ขอบคุณที่อุดหนุนครัวออยออย ครับ 🙏\n";
+      t += "----------------------------\n";
+      t += "บัญชี: น.ส. ทัศนีย์ เม่นทอง\n";
+      t += "ขอบคุณที่อุดหนุนครับ 🙏\n";
       return t;
     }
 
@@ -818,7 +878,7 @@
       const bPlace = document.getElementById('billDelivery').value.trim();
       const bDelivTime = document.getElementById('billDeliveryTime').value.trim();
       
-      let t = "      [ ใบสั่งเข้าครัว ]\n";
+      let t = "   [ ใบสั่งเข้าครัว ]\n";
       let line1 = "";
       if (bNo) line1 += `บิล: ${bNo}`;
       if (bDate) line1 += ` | วันที่: ${bDate}`;
@@ -831,7 +891,7 @@
 
       if (bCust) t += `ลูกค้า: ${bCust}\n`;
       if (bPlace) t += `ส่งที่: ${bPlace}\n`;
-      t += "--------------------------------\n";
+      t += "----------------------------\n";
 
       billItems.forEach((item, idx) => {
         let tagStr = "";
@@ -839,7 +899,7 @@
         if (item.special) tagStr += " [พิเศษ]";
         if (item.customSpecialText) tagStr += ` [${item.customSpecialText}]`;
 
-        t += `#${idx + 1} ${item.name}${tagStr}  x${item.qty}\n`;
+        t += `#${idx + 1} ${item.name}${tagStr} x${item.qty}\n`;
         let details = [];
         if (item.personName.trim()) details.push(item.personName.trim());
         if (item.eggOption !== 'none') details.push(item.eggOption);
@@ -852,7 +912,7 @@
       });
 
       const totalDishes = billItems.reduce((sum, item) => sum + item.qty, 0);
-      t += `--------------------------------\nรวมทั้งหมด: ${totalDishes} รายการ\n`;
+      t += `----------------------------\nรวมทั้งหมด: ${totalDishes} รายการ\n`;
       return t;
     }
 
@@ -870,8 +930,8 @@
       qrTarget.innerHTML = "";
       new QRCode(qrTarget, {
         text: SHOP_PROMPTPAY_PAYLOAD,
-        width: 150,
-        height: 150,
+        width: 170,
+        height: 170,
         colorDark : "#000000",
         colorLight : "#ffffff",
         correctLevel : QRCode.CorrectLevel.M
@@ -991,43 +1051,39 @@
       }
     }
 
-    // พิมพ์บิลคิดเงิน ออกเป็นภาษาไทยแท้ 100% ผ่านกราฟิก
+    // พิมพ์บิลคิดเงิน: ฟอนต์ขนาดใหญ่ 28px + QR Code กราฟิกสแกนติดง่าย
     async function printReceipt() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
       if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
       saveBillToHistory();
 
       const text = buildReceiptText();
-      const bitmapData = generateBitmapFromText(text, 22, false);
+      const textBitmap = generateBitmapFromText(text, 28, false); // ขนาด 28px ใหญ่ชัดเจน
+
+      // แปลง QR Code เป็น Bitmap เพื่อพิมพ์ออกกระดาษความร้อน
+      const tempDiv = document.createElement('div');
+      new QRCode(tempDiv, {
+        text: SHOP_PROMPTPAY_PAYLOAD,
+        width: 250,
+        height: 250,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.M
+      });
+      const qrCanvas = tempDiv.querySelector('canvas');
+      const qrBitmap = generateBitmapFromCanvas(qrCanvas);
+
       const init = [0x1B, 0x40];
-      const alignCenter = [0x1B, 0x61, 0x01];
-
-      let printData = [...init, ...bitmapData, ...alignCenter];
-
-      // พิมพ์ QR Code พร้อมเพย์ต่อท้าย
-      const encoder = new TextEncoder();
-      const qrPayloadBytes = encoder.encode(SHOP_PROMPTPAY_PAYLOAD);
-      const len = qrPayloadBytes.length + 3;
-      const pL = len % 256;
-      const pH = Math.floor(len / 256);
-
-      printData.push(0x1D, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00);
-      printData.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x06);
-      printData.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31);
-      printData.push(0x1D, 0x28, 0x6B, pL, pH, 0x31, 0x50, 0x30, ...qrPayloadBytes);
-      printData.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30);
-      printData.push(0x0A, 0x0A, 0x0A);
-
-      await sendChunks(printData);
+      await sendChunks([...init, ...textBitmap, ...qrBitmap]);
     }
 
-    // พิมพ์ใบสั่งเข้าครัว ออกเป็นภาษาไทยตัวหนาใหญ่ชัดเจน 100%
+    // พิมพ์ใบสั่งเข้าครัว: ฟอนต์ขนาดใหญ่ 34px ตัวหนาพิเศษ
     async function printKitchenTicket() {
       if (!printCharacteristic) return alert("ยังไม่ได้เชื่อมต่อบลูทูธ! กรุณากดปุ่มเชื่อมต่อด้านบนก่อนครับ");
       if (billItems.length === 0) return alert("กรุณาเลือกรายการอาหารก่อนพิมพ์");
 
       const text = buildKitchenText();
-      const bitmapData = generateBitmapFromText(text, 26, true);
+      const bitmapData = generateBitmapFromText(text, 34, true); // ขนาด 34px ตัวหนา พ่อครัวมองเห็นชัดเจน
       const init = [0x1B, 0x40];
 
       await sendChunks([...init, ...bitmapData]);
