@@ -16,7 +16,7 @@
     .status-badge { padding: 4px 10px; border-radius: 12px; background: #e2e8f0; font-size: 11px; font-weight: bold; }
     .status-badge.connected { background: #dcfce7; color: #166534; }
 
-    /* กล่องข้อมูลหัวบิล แยกทีละช่อง คีย์ตัวเลขได้เลย */
+    /* กล่องข้อมูลหัวบิล จัดเรียงตามลำดับใหม่ */
     .bill-meta-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .meta-group { display: flex; flex-direction: column; }
     .meta-group.full { grid-column: span 2; }
@@ -116,31 +116,40 @@
     </div>
     <button class="btn-act btn-blue" onclick="connectPrinter()">🔌 เชื่อมต่อเครื่องพิมพ์บลูทูธ</button>
 
-    <!-- ข้อมูลหัวบิล แยกช่องคีย์ตัวเลขได้โดยตรง -->
+    <!-- จัดเรียงข้อมูลหัวบิลใหม่ตามที่สั่งการ -->
     <div class="bill-meta-box">
+      <!-- บรรทัดที่ 1: เลขที่บิล (ซ้าย) | วันที่ (ขวา) -->
       <div class="meta-group">
-        <label class="meta-label">1. ลำดับที่ / เลขบิล:</label>
+        <label class="meta-label">เลขที่บิล:</label>
         <input type="text" id="billNo" class="meta-input" placeholder="เช่น 01">
       </div>
       <div class="meta-group">
-        <label class="meta-label">2. ชื่อลูกค้า / ผู้สั่ง:</label>
-        <input type="text" id="billCustName" class="meta-input" placeholder="เช่น คุณวิท">
-      </div>
-      <div class="meta-group full">
-        <label class="meta-label">3. สถานที่ส่ง:</label>
-        <input type="text" id="billDelivery" class="meta-input" placeholder="เช่น ตึก A ชั้น 3 (ส่งฟรี 2 กม.)">
-      </div>
-      <div class="meta-group">
-        <label class="meta-label">4. วันที่:</label>
+        <label class="meta-label">วันที่:</label>
         <input type="date" id="billDate" class="meta-input">
       </div>
-      <div class="meta-group">
-        <label class="meta-label">5. เวลาที่รับออเดอร์:</label>
+
+      <!-- บรรทัดที่ 2: เวลาที่รับออเดอร์ -->
+      <div class="meta-group full">
+        <label class="meta-label">เวลาที่รับออเดอร์:</label>
         <input type="text" id="billOrderTime" class="meta-input" placeholder="เช่น 11:15">
       </div>
+
+      <!-- บรรทัดที่ 3: ชื่อลูกค้า -->
       <div class="meta-group full">
-        <label class="meta-label">6. เวลาที่ส่ง:</label>
-        <input type="text" id="billDeliveryTime" class="meta-input" placeholder="เช่น 12:00 หรือ เที่ยงตรง">
+        <label class="meta-label">ชื่อลูกค้า:</label>
+        <input type="text" id="billCustName" class="meta-input" placeholder="เช่น คุณวิท">
+      </div>
+
+      <!-- บรรทัดที่ 4: สถานที่ส่ง -->
+      <div class="meta-group full">
+        <label class="meta-label">สถานที่ส่ง:</label>
+        <input type="text" id="billDelivery" class="meta-input" placeholder="เช่น ตึก A ชั้น 3 (ส่งฟรี 2 กม.)">
+      </div>
+
+      <!-- บรรทัดที่ 5: เวลาที่ให้จัดส่ง -->
+      <div class="meta-group full">
+        <label class="meta-label">เวลาที่ให้จัดส่ง:</label>
+        <input type="text" id="billDeliveryTime" class="meta-input" placeholder="เช่น 12:00 หรือ ก่อนเที่ยง">
       </div>
     </div>
 
@@ -242,7 +251,6 @@
       </div>
       <div id="previewText" class="receipt-content"></div>
       
-      <!-- พื้นที่ QR Code พร้อมปุ่มเซฟรูป -->
       <div id="modalQrBox" class="qr-container" style="display:none;">
         <div style="font-size:13px; font-weight:bold; color:#166534;">สแกนจ่าย: ครัวออยออย</div>
         <div style="font-size:11px; color:#64748b; margin-bottom:4px;">บัญชี: น.ส. ทัศนีย์ เม่นทอง (K SHOP)</div>
@@ -277,7 +285,6 @@
     let billItems = [];
     let printCharacteristic = null;
 
-    // ตั้งค่าเริ่มต้น: วันที่ปัจจุบัน และ เวลาที่รับออเดอร์
     function initMeta() {
       const now = new Date();
       const y = now.getFullYear();
@@ -575,13 +582,13 @@
       return `${d}/${m}/${y}`;
     }
 
-    // บิลคิดเงิน (แยก เวลาที่รับออเดอร์ และ เวลาที่ส่ง)
+    // บิลคิดเงิน: เรียงตามลำดับใหม่
     function buildReceiptText() {
       const bNo = document.getElementById('billNo').value.trim();
-      const bCust = document.getElementById('billCustName').value.trim();
-      const bPlace = document.getElementById('billDelivery').value.trim();
       const bDate = getFormattedDate();
       const bOrderTime = document.getElementById('billOrderTime').value.trim();
+      const bCust = document.getElementById('billCustName').value.trim();
+      const bPlace = document.getElementById('billDelivery').value.trim();
       const bDelivTime = document.getElementById('billDeliveryTime').value.trim();
       
       let total = 0;
@@ -593,12 +600,16 @@
       });
 
       let t = "🧾 บิลรายการอาหาร ครัวออยออย\n";
-      if (bNo) t += `เลขที่บิล: ${bNo}\n`;
+      // วันที่ อยู่ด้านขวา ถัดจากเลขที่บิล
+      let line1 = "";
+      if (bNo) line1 += `เลขที่บิล: ${bNo}`;
+      if (bDate) line1 += `   วันที่: ${bDate}`;
+      if (line1) t += `${line1}\n`;
+
+      if (bOrderTime) t += `เวลาที่รับออเดอร์: ${bOrderTime} น.\n`;
       if (bCust) t += `ชื่อลูกค้า: ${bCust}\n`;
       if (bPlace) t += `สถานที่ส่ง: ${bPlace}\n`;
-      t += `วันที่: ${bDate}\n`;
-      if (bOrderTime) t += `เวลาที่รับออเดอร์: ${bOrderTime} น.\n`;
-      if (bDelivTime) t += `เวลาที่ส่ง: ${bDelivTime} น.\n`;
+      if (bDelivTime) t += `เวลาที่ให้จัดส่ง: ${bDelivTime} น.\n`;
       t += "--------------------------------\n";
 
       billItems.forEach((item, idx) => {
@@ -632,21 +643,28 @@
       return t;
     }
 
-    // ใบสั่งเข้าครัว (แยกเวลาที่รับออเดอร์ และ เวลาที่ส่ง ให้พ่อครัวชัดเจน)
+    // ใบสั่งเข้าครัว: เรียงตามลำดับใหม่
     function buildKitchenText() {
       const bNo = document.getElementById('billNo').value.trim();
+      const bDate = getFormattedDate();
+      const bOrderTime = document.getElementById('billOrderTime').value.trim();
       const bCust = document.getElementById('billCustName').value.trim();
       const bPlace = document.getElementById('billDelivery').value.trim();
-      const bOrderTime = document.getElementById('billOrderTime').value.trim();
       const bDelivTime = document.getElementById('billDeliveryTime').value.trim();
       
       let t = "================================\n       [ ใบสั่งเข้าครัว ]       \n";
-      if (bNo) t += `บิล: ${bNo}\n`;
-      if (bOrderTime) t += `รับออเดอร์: ${bOrderTime} น. | `;
-      if (bDelivTime) t += `กำหนดส่ง: ${bDelivTime} น.\n`;
-      else t += "\n";
+      let line1 = "";
+      if (bNo) line1 += `บิล: ${bNo}`;
+      if (bDate) line1 += ` | วันที่: ${bDate}`;
+      if (line1) t += `${line1}\n`;
+
+      let line2 = [];
+      if (bOrderTime) line2.push(`รับออเดอร์: ${bOrderTime} น.`);
+      if (bDelivTime) line2.push(`ส่ง: ${bDelivTime} น.`);
+      if (line2.length > 0) t += `${line2.join(' | ')}\n`;
+
       if (bCust) t += `ลูกค้า: ${bCust}\n`;
-      if (bPlace) t += `ส่งที่: ${bPlace}\n`;
+      if (bPlace) t += `สถานที่ส่ง: ${bPlace}\n`;
       t += "================================\n\n";
 
       billItems.forEach((item, idx) => {
@@ -735,9 +753,9 @@
       if (unpaids.length === 0) return alert("ได้รับยอดครบทุกรายการเรียบร้อยแล้วครับ! 🎉");
 
       const bNo = document.getElementById('billNo').value.trim();
+      const bDate = getFormattedDate();
       const bCust = document.getElementById('billCustName').value.trim();
       const bPlace = document.getElementById('billDelivery').value.trim();
-      const bDate = getFormattedDate();
       const bDelivTime = document.getElementById('billDeliveryTime').value.trim();
       
       let totalBill = 0;
@@ -750,11 +768,14 @@
       const dueTotal = totalBill - paidTotal;
 
       let t = "📢 สรุปรายการออเดอร์ - ครัวออยออย\n";
-      if (bNo) t += `เลขที่บิล: ${bNo}\n`;
+      let line1 = "";
+      if (bNo) line1 += `เลขที่บิล: ${bNo}`;
+      if (bDate) line1 += `   วันที่: ${bDate}`;
+      if (line1) t += `${line1}\n`;
+
       if (bCust) t += `ลูกค้า: ${bCust}\n`;
       if (bPlace) t += `ส่งที่: ${bPlace}\n`;
-      t += `วันที่: ${bDate}\n`;
-      if (bDelivTime) t += `เวลาที่ส่ง: ${bDelivTime} น.\n`;
+      if (bDelivTime) t += `เวลาที่ให้จัดส่ง: ${bDelivTime} น.\n`;
       t += `--------------------------------\n`;
       t += `ยอดรวมทั้งบิล: ${totalBill} บาท\n✅ ได้รับแล้ว: ${paidTotal} บาท\nยอดคงเหลือ: ${dueTotal} บาท\n--------------------------------\nรายการที่รอชำระ:\n`;
 
@@ -849,18 +870,22 @@
       printData.push(...normalSize, ...boldOff);
       
       const bNo = document.getElementById('billNo').value.trim();
+      const bDate = getFormattedDate();
+      const bOrderTime = document.getElementById('billOrderTime').value.trim();
       const bCust = document.getElementById('billCustName').value.trim();
       const bPlace = document.getElementById('billDelivery').value.trim();
-      const bOrderTime = document.getElementById('billOrderTime').value.trim();
       const bDelivTime = document.getElementById('billDeliveryTime').value.trim();
       
       let headerStr = "";
-      if (bNo) headerStr += `บิล: ${bNo} | `;
+      if (bNo) headerStr += `บิล: ${bNo}`;
+      if (bDate) headerStr += ` | วันที่: ${bDate}`;
+      headerStr += "\n";
       if (bOrderTime) headerStr += `รับ: ${bOrderTime} น. | `;
-      if (bDelivTime) headerStr += `ส่ง: ${bDelivTime} น.`;
-      if (bCust) headerStr += `\nลูกค้า: ${bCust}`;
-      if (bPlace) headerStr += `\nสถานที่ส่ง: ${bPlace}`;
-      printData.push(...encoder.encode(headerStr + "\n================================\n\n"));
+      if (bDelivTime) headerStr += `ส่ง: ${bDelivTime} น.\n`;
+      else headerStr += "\n";
+      if (bCust) headerStr += `ลูกค้า: ${bCust}\n`;
+      if (bPlace) headerStr += `สถานที่ส่ง: ${bPlace}\n`;
+      printData.push(...encoder.encode(headerStr + "================================\n\n"));
 
       billItems.forEach((item, idx) => {
         let tagStr = "";
@@ -902,19 +927,19 @@
     function exportToCSV() {
       if (billItems.length === 0) return alert("ไม่มีข้อมูลรายการอาหาร");
       const bNo = document.getElementById('billNo').value.trim();
-      const bCust = document.getElementById('billCustName').value.trim();
-      const bPlace = document.getElementById('billDelivery').value.trim();
       const bDate = getFormattedDate();
       const bOrderTime = document.getElementById('billOrderTime').value.trim();
+      const bCust = document.getElementById('billCustName').value.trim();
+      const bPlace = document.getElementById('billDelivery').value.trim();
       const bDelivTime = document.getElementById('billDeliveryTime').value.trim();
 
-      let csvContent = "\uFEFFเลขที่บิล,ลูกค้า,สถานที่ส่ง,วันที่,เวลารับออเดอร์,เวลาส่ง,ลำดับ,รายการอาหาร,จำนวน,ราคา/หน่วย,ยอดรวม,ชื่อคนทาน,สถานะ,หมายเหตุ\n";
+      let csvContent = "\uFEFFเลขที่บิล,วันที่,เวลารับออเดอร์,ลูกค้า,สถานที่ส่ง,เวลาที่ให้จัดส่ง,ลำดับ,รายการอาหาร,จำนวน,ราคา/หน่วย,ยอดรวม,ชื่อคนทาน,สถานะ,หมายเหตุ\n";
 
       billItems.forEach((item, idx) => {
         const unitPrice = getItemUnitPrice(item);
         const lineTotal = unitPrice * item.qty;
         const status = item.isPaid ? 'ได้รับเงินแล้ว' : 'รอชำระ';
-        csvContent += `"${bNo}","${bCust}","${bPlace}","${bDate}","${bOrderTime}","${bDelivTime}",${idx + 1},"${item.name}",${item.qty},${unitPrice},${lineTotal},"${item.personName}","${status}","${item.note}"\n`;
+        csvContent += `"${bNo}","${bDate}","${bOrderTime}","${bCust}","${bPlace}","${bDelivTime}",${idx + 1},"${item.name}",${item.qty},${unitPrice},${lineTotal},"${item.personName}","${status}","${item.note}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
