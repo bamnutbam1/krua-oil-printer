@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ครัวออยออย - บิล & ติดตามยอดค้างชำระ</title>
+  <title>ครัวออยออย - บิลสั่งอาหาร & ใบสั่งเข้าครัว</title>
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { padding: 8px; background-color: #f1f5f9; margin: 0; color: #1e293b; }
@@ -51,7 +51,7 @@
     
     /* ปุ่มสถานะจ่ายเงิน */
     .btn-pay-toggle { padding: 4px 8px; font-size: 11px; font-weight: bold; border-radius: 6px; border: 1px solid; cursor: pointer; }
-    .btn-pay-toggle.unpaid { background: #fef2f2; color: #dc2626; border-color: #fca5a5; }
+    .btn-pay-toggle.unpaid { background: #fef2f2; color: #b91c1c; border-color: #fca5a5; }
     .btn-pay-toggle.paid { background: #dcfce7; color: #166534; border-color: #86efac; }
     
     .btn-delete { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; border-radius: 4px; padding: 2px 6px; font-size: 11px; cursor: pointer; margin-left: 4px; }
@@ -72,7 +72,7 @@
     /* สรุปยอดเงิน */
     .summary-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-top: 8px; font-size: 13px; }
     .summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-    .summary-row.due { font-size: 16px; font-weight: bold; color: #dc2626; border-top: 1px dashed #cbd5e1; padding-top: 6px; margin-top: 4px; }
+    .summary-row.due { font-size: 16px; font-weight: bold; color: #b91c1c; border-top: 1px dashed #cbd5e1; padding-top: 6px; margin-top: 4px; }
 
     /* ปุ่มสั่งการ */
     .btn-act { width: 100%; padding: 10px; font-size: 14px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 6px; }
@@ -81,7 +81,7 @@
     .btn-kitchen-line { background: #06c755; color: white; font-size: 14px; }
     .btn-preview-kitchen { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 13px; }
     
-    .btn-remind { background: #dc2626; color: white; font-size: 14px; }
+    .btn-remind { background: #b91c1c; color: white; font-size: 14px; }
     .btn-green { background: #16a34a; color: white; font-size: 15px; }
     .btn-preview { background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; font-size: 13px; }
     .btn-cyan { background: #0ea5e9; color: white; }
@@ -89,7 +89,7 @@
     .btn-gray { background: #64748b; color: white; padding: 6px; font-size: 12px; }
     input.cust { width: 100%; padding: 6px 8px; font-size: 13px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 4px; }
 
-    /* Modal หน้าต่างดูตัวอย่างบิล (รองรับทั้งบิลและครัว) */
+    /* Modal หน้าต่างจำลองสลิป */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; padding: 12px; }
     .receipt-paper { background: #fff; width: 100%; max-width: 360px; max-height: 85vh; border-radius: 8px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
     .receipt-content { font-family: monospace, sans-serif; font-size: 13px; line-height: 1.4; color: #000; overflow-y: auto; white-space: pre-wrap; background: #fafafa; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px; margin: 10px 0; }
@@ -164,31 +164,31 @@
     <!-- บิลรายการ -->
     <div class="bill-box">
       <div style="font-weight:bold; font-size:13px; border-bottom:1px solid #f1f5f9; padding-bottom:4px; margin-bottom:6px;">
-        📋 รายการออเดอร์ (แตะปุ่มเพื่อสลับ จ่ายแล้ว / ค้างจ่าย):
+        📋 รายการออเดอร์:
       </div>
       <div id="billContainer"><span style="color:#94a3b8; font-size:12px;">ยังไม่มีรายการ</span></div>
       
       <div class="summary-box">
         <div class="summary-row"><span>ยอดรวมทั้งหมด:</span><strong id="sumTotal">0 ฿</strong></div>
         <div class="summary-row" style="color: #166534;"><span>✅ ได้รับเงินแล้ว:</span><strong id="sumPaid">0 ฿</strong></div>
-        <div class="summary-row due"><span>⏳ ยอดค้างชำระ:</span><span id="sumDue">0 ฿</span></div>
+        <div class="summary-row due"><span>ยอดคงเหลือ:</span><span id="sumDue">0 ฿</span></div>
       </div>
     </div>
 
     <!-- ส่วนที่ 1: แผนกห้องครัว -->
     <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:8px; margin-top:8px;">
       <div style="font-size:12px; font-weight:bold; color:#b45309; margin-bottom:4px;">👨‍🍳 แผนกครัว (หน้าเตา):</div>
-      <button class="btn-act btn-preview-kitchen" onclick="openKitchenPreview()">👁️ ดูตัวอย่างใบครัว (ยังไม่ต้องต่อบลูทูธ)</button>
+      <button class="btn-act btn-preview-kitchen" onclick="openKitchenPreview()">👁️ ดูตัวอย่างใบครัว</button>
       <button class="btn-act btn-kitchen" onclick="printKitchenTicket()">🍳 พิมพ์ใบสั่งเข้าครัว</button>
       <button class="btn-act btn-kitchen-line" onclick="copyKitchenToLine()">📲 คัดลอกใบครัวส่ง LINE</button>
     </div>
 
-    <!-- ส่วนที่ 2: แผนกคิดเงิน & ติดตามยอด -->
+    <!-- ส่วนที่ 2: แผนกคิดเงิน -->
     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:8px; margin-top:8px;">
       <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px;">🧾 แผนกคิดเงิน & ลูกค้า:</div>
-      <button class="btn-act btn-preview" onclick="openReceiptPreview()">👁️ ดูตัวอย่างบิลคิดเงิน (ยังไม่ต้องต่อบลูทูธ)</button>
+      <button class="btn-act btn-preview" onclick="openReceiptPreview()">👁️ ดูตัวอย่างบิลคิดเงิน</button>
       <button class="btn-act btn-green" onclick="printReceipt()">🖨️ พิมพ์บิลคิดเงินลูกค้า</button>
-      <button class="btn-act btn-remind" onclick="copyUnpaidReminder()">📢 คัดลอกสรุป "คนยังไม่จ่าย" ส่ง LINE</button>
+      <button class="btn-act btn-remind" onclick="copyUnpaidReminder()">📢 คัดลอกสรุปรายการที่รอชำระส่ง LINE</button>
       <button class="btn-act btn-cyan" onclick="copyReceipt()">📋 คัดลอกบิลรวมส่ง LINE</button>
       <button class="btn-act btn-sheet" onclick="exportToCSV()">📊 ดาวน์โหลด Excel/CSV</button>
     </div>
@@ -196,7 +196,7 @@
     <button class="btn-act btn-gray" onclick="clearBill()" style="margin-top:10px;">ล้างรายการบิล</button>
   </div>
 
-  <!-- Modal หน้าต่างจำลองสลิป (เปิดดูตัวอย่างได้ทั้ง 2 แบบ) -->
+  <!-- Modal หน้าต่างจำลองสลิป -->
   <div id="previewModal" class="modal-overlay">
     <div class="receipt-paper">
       <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -450,7 +450,7 @@
               <span id="lineTotal-${idx}" style="margin: 0 6px; font-weight:bold;">${lineTotal} ฿</span>
               
               <button class="btn-pay-toggle ${item.isPaid ? 'paid' : 'unpaid'}" onclick="togglePaid(${idx})">
-                ${item.isPaid ? '✅ จ่ายแล้ว' : '⏳ รอจ่าย'}
+                ${item.isPaid ? '✅ จ่ายแล้ว' : 'ยังไม่ได้รับยอด'}
               </button>
               <button class="btn-delete" onclick="deleteItem(${idx})">🗑️</button>
             </div>
@@ -498,7 +498,7 @@
       updateTotals();
     }
 
-    // สร้างข้อความบิลคิดเงิน
+    // สร้างข้อความบิลคิดเงิน (ตัดคำว่า รอจ่าย/จ่ายแล้ว ออกจากบรรทัดรายการ)
     function buildReceiptText() {
       const cust = document.getElementById('custInfo').value.trim();
       const now = new Date();
@@ -521,8 +521,14 @@
       billItems.forEach((item, idx) => {
         const unitPrice = getItemUnitPrice(item);
         const lineTotal = unitPrice * item.qty;
-        const statusText = item.isPaid ? "[จ่ายแล้ว]" : "[รอจ่าย]";
-        t += `#${idx + 1} ${item.name} x${item.qty} = ${lineTotal} บ. ${statusText}\n`;
+        
+        let tags = [];
+        if (item.isDishOnly) tags.push(`กับข้าว ${item.dishPrice}บ.`);
+        if (item.special) tags.push("พิเศษ");
+        const tagStr = tags.length > 0 ? ` (${tags.join(', ')})` : '';
+
+        // แสดงรายการสะอาดตา ไม่มีคำว่า รอจ่าย/จ่ายแล้ว
+        t += `#${idx + 1} ${item.name}${tagStr} x${item.qty} = ${lineTotal} บ.\n`;
         
         let details = [];
         if (item.personName.trim()) details.push(item.personName.trim());
@@ -533,7 +539,10 @@
 
       t += "--------------------------------\n";
       t += `ยอดรวมทั้งหมด: ${total} บาท\n`;
-      t += `ได้รับแล้ว: ${paid} บาท | ค้างชำระ: ${total - paid} บาท\n`;
+      if (paid > 0) {
+        t += `✅ ได้รับเงินแล้ว: ${paid} บาท\n`;
+        t += `ยอดคงเหลือ: ${total - paid} บาท\n`;
+      }
       t += "--------------------------------\n";
       t += "ขอบคุณที่อุดหนุนครัวออยออย ครับ 🙏\n";
       return t;
@@ -548,7 +557,11 @@
       t += `เวลา: ${timeStr} น.` + (cust ? ` | ${cust}` : '') + "\n================================\n\n";
 
       billItems.forEach((item, idx) => {
-        t += `#${idx + 1} ${item.name}  [x${item.qty}]\n`;
+        let tagStr = "";
+        if (item.isDishOnly) tagStr += " [กับข้าว]";
+        if (item.special) tagStr += " [พิเศษ]";
+
+        t += `#${idx + 1} ${item.name}${tagStr}  [x${item.qty}]\n`;
         let details = [];
         if (item.personName.trim()) details.push(item.personName.trim());
         if (item.eggOption !== 'none') details.push(item.eggOption);
@@ -590,11 +603,11 @@
       document.getElementById('previewModal').style.display = 'none';
     }
 
-    // คัดลอกสรุปคนค้างชำระ
+    // คัดลอกสรุปรายการที่รอชำระ (ตัดคำว่า ค้างชำระ ออก)
     function copyUnpaidReminder() {
       if (billItems.length === 0) return alert("ไม่มีรายการในบิลครับ");
       const unpaids = billItems.filter(i => !i.isPaid);
-      if (unpaids.length === 0) return alert("ทุกท่านชำระเงินครบเรียบร้อยแล้วครับ! 🎉");
+      if (unpaids.length === 0) return alert("ได้รับยอดครบทุกรายการเรียบร้อยแล้วครับ! 🎉");
 
       const cust = document.getElementById('custInfo').value.trim();
       const now = new Date();
@@ -609,10 +622,10 @@
       });
       const dueTotal = totalBill - paidTotal;
 
-      let t = "📢 สรุปยอดค้างชำระ - ครัวออยออย\n";
+      let t = "📢 สรุปรายการออเดอร์ - ครัวออยออย\n";
       if (cust) t += `กลุ่ม/ผู้สั่ง: ${cust}\n`;
       t += `เวลา: ${timeStr} น.\n--------------------------------\n`;
-      t += `ยอดรวมทั้งบิล: ${totalBill} บาท\n✅ ชำระแล้ว: ${paidTotal} บาท\n⏳ ยอดค้างชำระ: ${dueTotal} บาท\n--------------------------------\nรายชื่อที่ยังรอชำระ:\n`;
+      t += `ยอดรวมทั้งบิล: ${totalBill} บาท\n✅ ได้รับแล้ว: ${paidTotal} บาท\nยอดคงเหลือ: ${dueTotal} บาท\n--------------------------------\nรายการที่รอชำระ:\n`;
 
       unpaids.forEach((item, idx) => {
         const unitPrice = getItemUnitPrice(item);
@@ -622,7 +635,7 @@
       });
 
       t += "--------------------------------\nโอนเข้าพร้อมเพย์: 080-9650875\nขอบคุณมากครับ 🙏";
-      navigator.clipboard.writeText(t).then(() => alert("📲 คัดลอกสรุปยอดค้างชำระเรียบร้อย!"));
+      navigator.clipboard.writeText(t).then(() => alert("📲 คัดลอกสรุปรายการเรียบร้อย!"));
     }
 
     function copyKitchenToLine() {
@@ -690,7 +703,7 @@
       billItems.forEach((item, idx) => {
         const unitPrice = getItemUnitPrice(item);
         const lineTotal = unitPrice * item.qty;
-        const status = item.isPaid ? 'จ่ายแล้ว' : 'ค้างชำระ';
+        const status = item.isPaid ? 'ได้รับเงินแล้ว' : 'รอชำระ';
         csvContent += `${idx + 1},"${dateStr}","${item.name}",${item.qty},${unitPrice},${lineTotal},"${item.personName}","${status}","${item.note}"\n`;
       });
 
