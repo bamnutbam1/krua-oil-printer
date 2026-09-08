@@ -6,37 +6,42 @@
   <title>ครัวออยออย - คิดเงิน & บิลสั่งอาหาร</title>
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { padding: 8px; background-color: #f1f5f9; margin: 0; color: #1e293b; }
+    body { padding: 6px; background-color: #f1f5f9; margin: 0; color: #1e293b; }
     
-    .card { background: white; padding: 12px; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 10px; }
-    .header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .header-box h2 { margin: 0; font-size: 20px; color: #b91c1c; }
+    .card { background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 10px; }
+    .header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .header-box h2 { margin: 0; font-size: 19px; color: #b91c1c; }
     
     .status-badge { padding: 4px 10px; border-radius: 12px; background: #e2e8f0; font-size: 11px; font-weight: bold; }
     .status-badge.connected { background: #dcfce7; color: #166534; }
 
-    .main-nav { display: flex; gap: 6px; margin-bottom: 8px; }
-    .main-nav-btn { flex: 1; padding: 9px; text-align: center; background: #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: bold; border: none; cursor: pointer; color: #334155; }
-    .main-nav-btn.active { background: #b91c1c; color: white; }
+    /* แท็บหลักด้านบน (Main Top Tabs) */
+    .top-tab-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 8px; position: sticky; top: 0; z-index: 50; background: #f1f5f9; padding-bottom: 4px; }
+    .top-tab-btn { padding: 8px 2px; text-align: center; background: #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; color: #475569; }
+    .top-tab-btn.active { background: #b91c1c; color: white; box-shadow: 0 2px 4px rgba(185, 28, 28, 0.3); }
 
+    /* ข้อมูลหัวบิล */
     .bill-meta-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .meta-group { display: flex; flex-direction: column; }
     .meta-group.full { grid-column: span 2; }
     .meta-label { font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 2px; }
     .meta-input { width: 100%; padding: 6px 8px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; }
 
-    .import-box { background: #f0fdf4; border: 1px dashed #22c55e; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
-    .import-box textarea { width: 100%; height: 70px; font-size: 12px; padding: 6px; border-radius: 6px; border: 1px solid #86efac; margin-bottom: 6px; }
+    /* นำเข้าจาก LINE */
+    .import-box { background: #f0fdf4; border: 1px dashed #22c55e; border-radius: 10px; padding: 8px; margin-bottom: 8px; }
+    .import-box textarea { width: 100%; height: 65px; font-size: 12px; padding: 6px; border-radius: 6px; border: 1px solid #86efac; margin-bottom: 6px; }
     .line-action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .btn-parse { background: #16a34a; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; width: 100%; font-size: 12px; cursor: pointer; }
     .btn-print-raw { background: #0284c7; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; width: 100%; font-size: 12px; cursor: pointer; }
 
+    /* กล่องเพิ่มเมนูเอง */
     .custom-add-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 8px; margin-bottom: 8px; }
     .custom-add-inputs { display: grid; grid-template-columns: 2fr 1fr auto; gap: 6px; align-items: center; }
 
-    .nav-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
-    .nav-tab { flex: 1; padding: 7px 4px; text-align: center; background: #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; color: #475569; }
-    .nav-tab.active { background: #475569; color: white; }
+    /* แท็บหมวดอาหารย่อย */
+    .sub-nav-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+    .sub-nav-tab { flex: 1; padding: 6px 4px; text-align: center; background: #e2e8f0; border-radius: 6px; font-size: 11px; font-weight: bold; border: none; cursor: pointer; color: #475569; }
+    .sub-nav-tab.active { background: #475569; color: white; }
 
     .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 180px; overflow-y: auto; }
     .btn-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -53,6 +58,7 @@
     .meat-btn { background: #fef2f2; border: 1px solid #fecaca; padding: 6px 2px; border-radius: 6px; font-size: 12px; font-weight: bold; text-align: center; cursor: pointer; color: #991b1b; display: flex; flex-direction: column; }
     .meat-btn span.p { font-size: 10px; color: #b91c1c; margin-top: 2px; }
 
+    /* บิลรายการ */
     .bill-box { border: 2px dashed #cbd5e1; border-radius: 10px; padding: 8px; background: #fff; margin-top: 8px; }
     .bill-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 8px; }
     .bill-item.is-paid { background: #f0fdf4; border-radius: 6px; padding: 6px; }
@@ -84,10 +90,12 @@
     .row-inputs { display: grid; grid-template-columns: 1fr 1.2fr; gap: 4px; margin-top: 4px; }
     .sub-input { width: 100%; padding: 4px; font-size: 11px; border-radius: 4px; border: 1px solid #e2e8f0; }
 
+    /* สรุปยอดเงิน */
     .summary-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-top: 8px; font-size: 13px; }
     .summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
     .summary-row.due { font-size: 16px; font-weight: bold; color: #b91c1c; border-top: 1px dashed #cbd5e1; padding-top: 6px; margin-top: 4px; }
 
+    /* ปุ่มสั่งการ */
     .btn-act { width: 100%; padding: 10px; font-size: 14px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 6px; }
     .btn-blue { background: #0284c7; color: white; padding: 6px; font-size: 12px; margin-bottom: 6px; }
     .btn-kitchen { background: #d97706; color: white; font-size: 15px; }
@@ -130,12 +138,16 @@
     </div>
     <button class="btn-act btn-blue" onclick="connectPrinter()">🔌 เชื่อมต่อเครื่องพิมพ์บลูทูธ</button>
 
-    <div class="main-nav">
-      <button id="navMainBtn" class="main-nav-btn active" onclick="switchMainPage('pos')">📝 จัดการบิล / ออกบิล</button>
-      <button id="navHistBtn" class="main-nav-btn" onclick="switchMainPage('history')">📅 ประวัติบิลย้อนหลัง</button>
+    <!-- แถบแท็บด้านบน ไม่ต้องเลื่อนเยอะ -->
+    <div class="top-tab-bar">
+      <button id="tabNavOrder" class="top-tab-btn active" onclick="switchTopTab('order')">📝 ออเดอร์</button>
+      <button id="tabNavKitchen" class="top-tab-btn" onclick="switchTopTab('kitchen')">🍳 ครัว</button>
+      <button id="tabNavBilling" class="top-tab-btn" onclick="switchTopTab('billing')">🧾 คิดเงิน</button>
+      <button id="tabNavHistory" class="top-tab-btn" onclick="switchTopTab('history')">📅 ประวัติบิล</button>
     </div>
 
-    <div id="pagePos">
+    <!-- ================= แท็บที่ 1: ออเดอร์ (สั่งอาหาร & จัดการรายการ) ================= -->
+    <div id="paneOrder">
       <div class="bill-meta-box">
         <div class="meta-group">
           <label class="meta-label">เลขที่บิล:</label>
@@ -168,7 +180,7 @@
         <textarea id="lineRawText" placeholder="วางข้อความที่ลูกค้าสั่งที่นี่..."></textarea>
         <div class="line-action-btns">
           <button class="btn-parse" onclick="parseLineOrders()">⚡ แปลงข้อความเข้าบิล</button>
-          <button class="btn-print-raw" onclick="printRawLineText()">🖨️ พิมพ์ข้อความนี้ออกกระดาษ</button>
+          <button class="btn-print-raw" onclick="printRawLineText()">🖨️ พิมพ์ข้อความนี้ทันที</button>
         </div>
       </div>
 
@@ -181,10 +193,10 @@
         </div>
       </div>
 
-      <div class="nav-tabs">
-        <button class="nav-tab active" onclick="setTab('fast')">🍛 จานด่วน</button>
-        <button class="nav-tab" onclick="setTab('rec')">⭐ เมนูแนะนำ</button>
-        <button class="nav-tab" onclick="setTab('etc')">🥚 เมนูอื่นๆ</button>
+      <div class="sub-nav-tabs">
+        <button class="sub-nav-tab active" onclick="setSubTab('fast')">🍛 จานด่วน</button>
+        <button class="sub-nav-tab" onclick="setSubTab('rec')">⭐ เมนูแนะนำ</button>
+        <button class="sub-nav-tab" onclick="setSubTab('etc')">🥚 เมนูอื่นๆ</button>
       </div>
 
       <div id="tabFast">
@@ -227,30 +239,48 @@
         </div>
       </div>
 
+      <!-- รายการออเดอร์ในบิล -->
       <div class="bill-box">
         <div style="font-weight:bold; font-size:13px; border-bottom:1px solid #f1f5f9; padding-bottom:4px; margin-bottom:6px;">
           📋 รายการออเดอร์:
         </div>
         <div id="billContainer"><span style="color:#94a3b8; font-size:12px;">ยังไม่มีรายการ</span></div>
-        
-        <div class="summary-box">
-          <div class="summary-row"><span>ยอดรวมทั้งหมด:</span><strong id="sumTotal">0 ฿</strong></div>
-          <div class="summary-row" style="color: #166534;"><span>✅ ได้รับเงินแล้ว:</span><strong id="sumPaid">0 ฿</strong></div>
-          <div class="summary-row due"><span>ยอดคงเหลือ:</span><span id="sumDue">0 ฿</span></div>
-        </div>
       </div>
 
-      <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:8px; margin-top:8px;">
-        <div style="font-size:12px; font-weight:bold; color:#b45309; margin-bottom:4px;">👨‍🍳 แผนกครัว (หน้าเตา):</div>
+      <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap:6px; margin-top:10px;">
+        <button class="btn-act btn-gray" style="margin-top:0;" onclick="saveAndClearBill()">💾 บันทึก & บิลถัดไป</button>
+        <button class="btn-act btn-danger" style="margin-top:0;" onclick="justClearBill()">🧹 ล้างรายการบิล</button>
+      </div>
+    </div>
+
+    <!-- ================= แท็บที่ 2: ครัว (หน้าเตา) ================= -->
+    <div id="paneKitchen" style="display: none;">
+      <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:10px; margin-bottom:8px;">
+        <div style="font-size:13px; font-weight:bold; color:#b45309; margin-bottom:6px;">👨‍🍳 คำสั่งสำหรับแผนกครัว:</div>
+        <button class="btn-act btn-kitchen" onclick="printKitchenTicket()">🍳 พิมพ์ใบสั่งเข้าครัว (ตัวใหญ่)</button>
         <button class="btn-act btn-preview-kitchen" onclick="openKitchenPreview()">👁️ ดูตัวอย่างใบครัว</button>
-        <button class="btn-act btn-kitchen" onclick="printKitchenTicket()">🍳 พิมพ์ใบสั่งเข้าครัว</button>
         <button class="btn-act btn-kitchen-line" onclick="copyKitchenToLine()">📲 คัดลอกใบครัวส่ง LINE</button>
       </div>
 
-      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:8px; margin-top:8px;">
-        <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px;">🧾 แผนกคิดเงิน & ลูกค้า:</div>
-        <button class="btn-act btn-preview" onclick="openReceiptPreview()">👁️ ดูตัวอย่างบิลคิดเงิน</button>
+      <div style="font-weight:bold; font-size:13px; margin: 8px 0 4px 0; color:#475569;">รายการที่ต้องทำในบิลนี้:</div>
+      <div id="kitchenItemList" style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; min-height:100px;">
+        (ยังไม่มีรายการออเดอร์)
+      </div>
+    </div>
+
+    <!-- ================= แท็บที่ 3: คิดเงิน & สรุปยอด ================= -->
+    <div id="paneBilling" style="display: none;">
+      <div class="summary-box" style="margin-top:0; margin-bottom:10px;">
+        <div style="font-weight:bold; font-size:13px; color:#1e293b; margin-bottom:6px;">💰 สรุปยอดเงินบิลนี้:</div>
+        <div class="summary-row"><span>ยอดรวมทั้งหมด:</span><strong id="sumTotal">0 ฿</strong></div>
+        <div class="summary-row" style="color: #166534;"><span>✅ ได้รับเงินแล้ว:</span><strong id="sumPaid">0 ฿</strong></div>
+        <div class="summary-row due"><span>ยอดคงเหลือที่ต้องชำระ:</span><span id="sumDue">0 ฿</span></div>
+      </div>
+
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px;">
+        <div style="font-size:13px; font-weight:bold; color:#475569; margin-bottom:6px;">🧾 เมนูจัดการเงิน & พิมพ์บิล:</div>
         <button class="btn-act btn-green" onclick="printReceipt()">🖨️ พิมพ์บิลคิดเงินลูกค้า</button>
+        <button class="btn-act btn-preview" onclick="openReceiptPreview()">👁️ ดูตัวอย่างบิลคิดเงิน</button>
         <button class="btn-act btn-remind" onclick="copyUnpaidReminder()">📢 คัดลอกสรุปรายการที่รอชำระส่ง LINE</button>
         <button class="btn-act btn-cyan" onclick="copyReceipt()">📋 คัดลอกบิลรวมส่ง LINE</button>
       </div>
@@ -261,7 +291,8 @@
       </div>
     </div>
 
-    <div id="pageHistory" style="display: none;">
+    <!-- ================= แท็บที่ 4: ประวัติบิลย้อนหลัง ================= -->
+    <div id="paneHistory" style="display: none;">
       <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:10px; margin-bottom:10px;">
         <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px;">🔍 เลือกวันที่ต้องการดูประวัติ:</div>
         <div style="display:flex; gap:6px;">
@@ -286,6 +317,7 @@
 
   </div>
 
+  <!-- Modal หน้าต่างจำลองสลิป -->
   <div id="previewModal" class="modal-overlay">
     <div class="receipt-paper">
       <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -318,6 +350,56 @@
     let selectedCookingType = "ผัดกะเพรา";
     let billItems = [];
     let printCharacteristic = null;
+
+    // ฟังก์ชันสลับแท็บหลักด้านบน (ออเดอร์, ครัว, คิดเงิน, ประวัติ)
+    function switchTopTab(tab) {
+      document.getElementById('paneOrder').style.display = tab === 'order' ? 'block' : 'none';
+      document.getElementById('paneKitchen').style.display = tab === 'kitchen' ? 'block' : 'none';
+      document.getElementById('paneBilling').style.display = tab === 'billing' ? 'block' : 'none';
+      document.getElementById('paneHistory').style.display = tab === 'history' ? 'block' : 'none';
+
+      document.getElementById('tabNavOrder').className = `top-tab-btn ${tab === 'order' ? 'active' : ''}`;
+      document.getElementById('tabNavKitchen').className = `top-tab-btn ${tab === 'kitchen' ? 'active' : ''}`;
+      document.getElementById('tabNavBilling').className = `top-tab-btn ${tab === 'billing' ? 'active' : ''}`;
+      document.getElementById('tabNavHistory').className = `top-tab-btn ${tab === 'history' ? 'active' : ''}`;
+
+      if (tab === 'kitchen') renderKitchenTab();
+      if (tab === 'history') renderHistory();
+      if (tab === 'billing') updateTotals();
+    }
+
+    // แสดงรายการสรุปในแท็บครัว
+    function renderKitchenTab() {
+      const box = document.getElementById('kitchenItemList');
+      if (billItems.length === 0) {
+        box.innerHTML = '<span style="color:#94a3b8;">ยังไม่มีรายการออเดอร์</span>';
+        return;
+      }
+      let h = "";
+      billItems.forEach((item, idx) => {
+        let opt = [];
+        if (item.isDishOnly) opt.push("กับข้าว");
+        if (item.special) opt.push("พิเศษ");
+        if (item.eggOption !== 'none') opt.push(item.eggOption);
+        if (item.customSpecialText) opt.push(item.customSpecialText);
+        if (item.personName) opt.push("👤 " + item.personName);
+        if (item.note) opt.push("📝 " + item.note);
+
+        h += `<div style="padding:6px 0; border-bottom:1px dashed #e2e8f0;">
+          <strong style="font-size:14px;">#${idx + 1} ${item.name} x${item.qty}</strong>
+          ${opt.length > 0 ? `<div style="font-size:12px; color:#d97706; margin-top:2px;">↳ (${opt.join(', ')})</div>` : ''}
+        </div>`;
+      });
+      box.innerHTML = h;
+    }
+
+    function setSubTab(tab) {
+      document.querySelectorAll('.sub-nav-tab').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tabFast').style.display = tab === 'fast' ? 'block' : 'none';
+      document.getElementById('tabRec').style.display = tab === 'rec' ? 'block' : 'none';
+      document.getElementById('tabEtc').style.display = tab === 'etc' ? 'block' : 'none';
+    }
 
     function wrapText(ctx, text, maxWidth) {
       const wrappedLines = [];
@@ -415,29 +497,6 @@
       document.getElementById('billNo').value = `${y.toString().slice(-2)}${m}${d}-${billCount}`;
     }
     window.onload = initMeta;
-
-    function switchMainPage(page) {
-      if (page === 'pos') {
-        document.getElementById('pagePos').style.display = 'block';
-        document.getElementById('pageHistory').style.display = 'none';
-        document.getElementById('navMainBtn').classList.add('active');
-        document.getElementById('navHistBtn').classList.remove('active');
-      } else {
-        document.getElementById('pagePos').style.display = 'none';
-        document.getElementById('pageHistory').style.display = 'block';
-        document.getElementById('navMainBtn').classList.remove('active');
-        document.getElementById('navHistBtn').classList.add('active');
-        renderHistory();
-      }
-    }
-
-    function setTab(tab) {
-      document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById('tabFast').style.display = tab === 'fast' ? 'block' : 'none';
-      document.getElementById('tabRec').style.display = tab === 'rec' ? 'block' : 'none';
-      document.getElementById('tabEtc').style.display = tab === 'etc' ? 'block' : 'none';
-    }
 
     const recContainer = document.getElementById('recMenuContainer');
     recList.forEach(m => {
@@ -1106,7 +1165,7 @@
       document.getElementById('billDeliveryTime').value = found.deliveryTime;
       billItems = JSON.parse(JSON.stringify(found.items));
 
-      switchMainPage('pos');
+      switchTopTab('order');
       renderBill();
     }
 
